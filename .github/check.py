@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 import json
-import py_compile
 import re
 import shutil
 import subprocess
@@ -136,10 +135,10 @@ def main() -> int:
     for path in text_files():
         rel = path.relative_to(ROOT).as_posix()
         if path.suffix == ".py":
-            try:
-                py_compile.compile(str(path), doraise=True, cfile=None)
-            except py_compile.PyCompileError as e:
-                err(f"{rel}: does not compile: {e.msg}")
+            try:  # compile in memory: py_compile would leave __pycache__/ inside skill folders that get copied
+                compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+            except (SyntaxError, ValueError) as e:
+                err(f"{rel}: does not compile: {e}")
         if rel == ".github/check.py":
             continue
         content = path.read_text(encoding="utf-8", errors="ignore")
