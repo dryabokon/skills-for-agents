@@ -2,6 +2,8 @@ name: ci
 on:
   push:
   pull_request:
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,4 +17,4 @@ jobs:
       - name: App starts and serves pages
         run: |
           RUNS_DIR=$(mktemp -d) python -m app --port 8080 & sleep 2
-          curl -fsS http://127.0.0.1:8080/healthz && curl -fsS -o /dev/null http://127.0.0.1:8080/
+          curl -fsS http://127.0.0.1:8080/health && curl -fsS -o /dev/null http://127.0.0.1:8080/

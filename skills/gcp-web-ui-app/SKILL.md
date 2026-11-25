@@ -73,6 +73,8 @@ from the folder, not from memory.
   passes `D:/...` paths to gcloud.
 - **Run files are written atomically** (`runs.write`: temp file + replace, retried - on Windows a replace fails
   while the page is reading the file). Never write `status.json` or `results.json` directly.
+- **Health check is `/health`, not `/healthz`**: Cloud Run reserves `/healthz` and answers it itself.
+- **CI runs with a read-only token** (`permissions: contents: read` in `ci.yml`); widen it only for a job that needs it.
 - **External APIs** in `run()`: set a timeout (`urllib.request.urlopen(url, timeout=30)`), log what was fetched,
   keep inputs small; a run should finish in seconds to a few minutes.
 - **Cloud costs**: if `run()` queries BigQuery, dry-run first and cap `maximum_bytes_billed` (bigquery skill).

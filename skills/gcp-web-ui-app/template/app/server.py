@@ -7,7 +7,7 @@
     POST /api/runs            {settings} -> {run}   (400 with the reason if a setting is invalid)
     GET  /api/runs            past runs, newest first
     GET  /api/runs/<name>     config, status, results and log of one run
-    GET  /healthz             ok
+    GET  /health              ok   (not /healthz: Cloud Run reserves it)
 
 python -m app [--port 8080] [--host 127.0.0.1]   (Cloud Run sets PORT; the container listens on 0.0.0.0)
 """
@@ -84,7 +84,7 @@ class Handler(BaseHTTPRequestHandler):
         p, q = u.path.rstrip("/") or "/", parse_qs(u.query)
         if p == "/":
             return self.send(200, (STATIC / "index.html").read_bytes(), "text/html; charset=utf-8")
-        if p == "/healthz":
+        if p == "/health":
             return self.send(200, "ok", "text/plain; charset=utf-8")
         if p == "/architecture":
             return self.send(200, architecture_page(), "text/html; charset=utf-8")

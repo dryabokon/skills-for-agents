@@ -57,7 +57,7 @@ class AppTest(unittest.TestCase):
         return s
 
     def test_pages(self):
-        for p in ("/", "/architecture", "/healthz"):
+        for p in ("/", "/architecture", "/health"):
             self.assertEqual(self.get(p, raw=True)[0], 200, p)
         a = self.get("/api/app")
         self.assertEqual(a["title"], runner.TITLE)
