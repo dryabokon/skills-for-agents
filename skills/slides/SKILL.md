@@ -2,7 +2,7 @@
 name: slides
 description: Build presentation slide decks as a single self-contained HTML file (16:9, keyboard navigation, themeable) and export them to PDF; check the layout automatically and look at screenshots before handing over. Use when the user asks for slides, a deck, a presentation, a pitch, a talk, a one-slide summary, or to turn a document, report or notes into slides. Not for editing existing .pptx files.
 license: MIT
-compatibility: Requires Python 3.9+ and Chrome, Edge or Chromium (set CHROME_PATH if not auto-detected). No pip packages.
+compatibility: Requires Python 3.9+ and Chrome, Edge, Chromium or chrome-headless-shell (set CHROME_PATH if not auto-detected). No pip packages.
 ---
 
 # Slides

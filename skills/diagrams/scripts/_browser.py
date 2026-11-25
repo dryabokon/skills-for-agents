@@ -30,7 +30,10 @@ _CANDIDATES = {
         "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     ],
 }
-_ON_PATH = ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "msedge", "microsoft-edge"]
+_ON_PATH = ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "msedge", "microsoft-edge", "chrome-headless-shell"]
+# where `npx @puppeteer/browsers install chrome-headless-shell@stable --path ~/.cache/puppeteer` puts it
+# (no root needed - the easy way to get a browser in WSL, a container or CI)
+_PUPPETEER_CACHE = Path.home() / ".cache" / "puppeteer"
 
 
 def find_browser() -> str:
@@ -46,7 +49,11 @@ def find_browser() -> str:
         found = shutil.which(name)
         if found:
             return found
-    sys.exit("No Chrome, Edge or Chromium found. Install one or set CHROME_PATH to its executable.")
+    cached = sorted(_PUPPETEER_CACHE.glob("chrome-headless-shell/*/*/chrome-headless-shell"), reverse=True)
+    if cached:
+        return str(cached[0])
+    sys.exit("No Chrome, Edge or Chromium found. Install one, set CHROME_PATH, or (Linux/WSL, no root):\n"
+             "  npx @puppeteer/browsers install chrome-headless-shell@stable --path ~/.cache/puppeteer")
 
 
 def file_url(path: Path, query: str = "") -> str:

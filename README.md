@@ -28,7 +28,16 @@ bash examples/mermaid-flow.sh          # -> out/order-flow.svg/.png
 ```
 
 The example files are short lists of commands — open one, copy any line, change the arguments.
-On Windows run them from Git Bash, or paste the lines into PowerShell one by one.
+
+**WSL / Linux without Chrome** — a headless browser, no root needed (found automatically):
+
+```bash
+npx @puppeteer/browsers install chrome-headless-shell@stable --path ~/.cache/puppeteer
+```
+In WSL, to render with the same fonts as Windows (Segoe UI etc.), point fontconfig at the Windows fonts:
+```bash
+mkdir -p ~/.config/fontconfig && printf '<?xml version="1.0"?>\n<fontconfig><dir>/mnt/c/Windows/Fonts</dir></fontconfig>\n' > ~/.config/fontconfig/fonts.conf && fc-cache -f
+```
 
 ## Install for an agent
 

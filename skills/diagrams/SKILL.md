@@ -2,7 +2,7 @@
 name: diagrams
 description: Draw architecture, flow, sequence and as-is/to-be diagrams as clean SVG and PNG in a shared theme - Mermaid for quick auto-laid-out diagrams, hand-made SVG when the layout matters - and check them automatically (text overflowing boxes, overlaps, elements off canvas) before handing over. Use when the user asks for a diagram, schema, flowchart, architecture picture, sequence diagram, data-flow, or a visual for slides, docs or a report.
 license: MIT
-compatibility: Requires Python 3.9+ and Chrome, Edge or Chromium. Mermaid rendering also needs Node.js 18+ (npx); hand-made SVG does not.
+compatibility: Requires Python 3.9+ and Chrome, Edge, Chromium or chrome-headless-shell. Mermaid rendering also needs Node.js 18+ (npx); hand-made SVG does not.
 ---
 
 # Diagrams
