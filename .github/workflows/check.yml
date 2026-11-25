@@ -15,3 +15,4 @@ jobs:
           (cd skills/slides   && bash examples/build-a-deck.sh)
           (cd skills/diagrams && bash examples/svg-and-check.sh)
           (cd skills/diagrams && bash examples/mermaid-flow.sh)
+          (cd skills/azure-devops && bash examples/status-tour.sh && bash examples/why-did-build-fail.sh && bash examples/pr-dry-run.sh)

@@ -1,8 +1,9 @@
 # skills-for-agents
 
-Skills that let a coding agent (Claude Code, Codex, Cursor, Copilot, Gemini CLI) produce documentation
-people actually look at — slide decks and diagrams in one consistent style — and **check its own
-output before handing it to you**.
+Skills that let a coding agent (Claude Code, Codex, Cursor, Copilot, Gemini CLI) do the work around the code:
+slide decks and diagrams in one consistent style, and answers from Azure DevOps — *why did the build fail,
+where is my PR stuck*. The agent **checks its own output before handing it to you**, and every skill
+can be run by hand with the same commands.
 
 ## What you can ask
 
@@ -19,6 +20,18 @@ agent picked a layout per slide, drew the diagram with a status legend, ran a la
 clipped or too-small text, looked at a screenshot of every slide, fixed what it found — and told you what
 it had to assume (*"the note has no author or date, so the title slide says 'Data platform · November 2026'"*).
 
+> **"Why did the latest failed aspnetcore-helix-matrix build fail? Tell me the root cause and what to fix."**
+
+The agent fetched the latest failed build, read the step that failed *first* and its log, and answered
+(shortened and translated from one real run against the public .NET CI):
+
+> **Root cause:** step *Build shared fx* failed NuGet restore with 34 × `NU1603` — projects on `release/11.0`
+> reference `Microsoft.Extensions.*` **10.11.1**, which is not on the configured feeds; NuGet resolved 11.0.0
+> instead and warnings-as-errors turned that into a failure. *Monitor Helix Jobs* failed only as a consequence
+> (0 jobs were submitted). **Fix:** update the versions through the dependency flow (`eng/Versions.props`,
+> `darc update-dependencies`) rather than by hand; don't silence NU1603. *I did not open the repository — the
+> file and the exact target version are inferred from the log; verify them in code.*
+
 Other requests the skills are built for:
 
 | You say | You get |
@@ -28,10 +41,13 @@ Other requests the skills are built for:
 | "Make a flowchart of the release process from RELEASE.md" | a Mermaid diagram rendered in the same theme |
 | "Restyle the deck in our brand colour #0f766e" | the same deck and diagrams, recoloured from one theme file |
 | "Put the architecture diagram on a slide after the problem statement" | the diagram inlined in the deck, still one file |
+| "What's the status of my PR?" | votes still missing, failing policies with their builds, open review threads by file |
+| "What's assigned to me this sprint?" | your open work items, newest first |
+| "Open a PR for feature/x into develop, linked to #1146" | a draft to confirm first — nothing is created until you say so |
 
 ## Install
 
-**Claude Code** — one plugin, two skills (`skills-for-agents:slides`, `skills-for-agents:diagrams`):
+**Claude Code** — one plugin; skills appear as `skills-for-agents:slides`, `…:diagrams`, `…:azure-devops`:
 
 ```text
 /plugin marketplace add dryabokon/skills-for-agents
@@ -49,6 +65,8 @@ gemini skills install https://github.com/dryabokon/skills-for-agents --path skil
 **Requirements:** Python 3.9+ and a Chromium-based browser (Chrome, Edge, Chromium) — no pip packages.
 Mermaid diagrams also need Node.js 18+. No Chrome (Linux, WSL, CI)? One command, no root:
 `npx @puppeteer/browsers install chrome-headless-shell@stable --path ~/.cache/puppeteer`.
+Services read their settings from environment variables or a `.env` file in your project — each skill ships a
+`.env.example` listing them (e.g. [azure-devops](skills/azure-devops/.env.example)). Tokens never go into the repo or the chat.
 
 ## Skills
 
@@ -56,6 +74,7 @@ Mermaid diagrams also need Node.js 18+. No Chrome (Linux, WSL, CI)? One command,
 |---|---|---|
 | **slides** | single-file HTML decks, 16:9, 8 layouts (title, section, bullets, two columns, big numbers, figure, quote, table), PDF export, layout check, screenshots | [SKILL.md](skills/slides/SKILL.md) · [layouts](skills/slides/references/layouts.md) |
 | **diagrams** | Mermaid for quick auto-layout, hand-made SVG when layout matters; one theme and status legend (confirmed / proposed / unclear); geometry check | [SKILL.md](skills/diagrams/SKILL.md) · [SVG conventions](skills/diagrams/references/svg-conventions.md) |
+| **azure-devops** | PR status (votes, policies, open review threads), why a build failed (first failing step, errors, log tail), work items, wiki, agent pools; prepares PRs but creates one only on confirmation; never merges or approves | [SKILL.md](skills/azure-devops/SKILL.md) · [.env.example](skills/azure-devops/.env.example) |
 
 Your style: colours and fonts are CSS variables. Put `:root { --accent: #0f766e; }` into `.agent-theme.css`
 in your project and every deck and diagram the agent makes there follows it.
@@ -70,6 +89,7 @@ git clone https://github.com/dryabokon/skills-for-agents
 cd skills-for-agents/skills/slides   && bash examples/build-a-deck.sh    # -> out/streaming.html, .pdf, -shots/
 cd ../diagrams && bash examples/svg-and-check.sh                          # -> themed SVG + what the check reports
 cd ../diagrams && bash examples/mermaid-flow.sh                           # -> Mermaid flowchart, SVG + PNG
+cd ../azure-devops && bash examples/why-did-build-fail.sh                 # -> latest failed build: cause, errors, log tail
 ```
 
 <details>
