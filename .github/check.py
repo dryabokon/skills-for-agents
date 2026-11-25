@@ -7,7 +7,7 @@
    name == folder, kebab-case <= 64, description 1..1024, only portable frontmatter keys, < 500 lines,
    relative links resolve
 2. every skill has at least one runnable example: skills/<name>/examples/*.sh
-3. files that several skills carry (same relative path, e.g. scripts/_browser.py, assets/theme.css)
+3. shared helpers several skills carry (scripts/_*.py, assets/theme.css)
    are identical in every skill
 4. all Python compiles
 5. nothing that looks like a secret is committed
@@ -109,11 +109,12 @@ def main() -> int:
     for folder in skills:
         check_skill(folder)
 
+    # Shared helpers: private modules (scripts/_*.py) and the theme. Other same-named files (SKILL.md, .env.example,
+    # examples/status-tour.sh) are per-skill by design.
     copies: dict[str, list[Path]] = {}
     for folder in skills:
-        for f in folder.rglob("*"):
-            if f.is_file() and f.name != "SKILL.md" and not (SKIP_DIRS & set(f.relative_to(folder).parts)):
-                copies.setdefault(f.relative_to(folder).as_posix(), []).append(f)
+        for f in [*folder.glob("scripts/_*.py"), *folder.glob("assets/theme.css")]:
+            copies.setdefault(f.relative_to(folder).as_posix(), []).append(f)
     for rel, files in copies.items():
         if len(files) > 1 and len({f.read_bytes() for f in files}) > 1:
             names = ", ".join(f.relative_to(ROOT).as_posix() for f in files)

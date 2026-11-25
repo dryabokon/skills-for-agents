@@ -11,8 +11,11 @@ jobs:
       - name: Repository checks
         run: python .github/check.py
       - name: Examples run end to end
+        env:
+          GH_TOKEN: ${{ github.token }}  # read-only, this repository; public data elsewhere
         run: |
           (cd skills/slides   && bash examples/build-a-deck.sh)
           (cd skills/diagrams && bash examples/svg-and-check.sh)
           (cd skills/diagrams && bash examples/mermaid-flow.sh)
           (cd skills/azure-devops && bash examples/status-tour.sh && bash examples/why-did-build-fail.sh && bash examples/pr-dry-run.sh)
+          (cd skills/git-hosting && bash examples/status-tour.sh && bash examples/why-did-ci-fail.sh && bash examples/pr-and-git.sh)
