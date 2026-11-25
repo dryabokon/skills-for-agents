@@ -82,7 +82,7 @@ def block(b: dict) -> str:
     if t == "images":
         return images(b.get("items", []))
     if t == "items":
-        return "".join(item(i) for i in b.get("items", []))
+        return "<div class='items'>" + "".join(item(i) for i in b.get("items", [])) + "</div>"
     raise SystemExit(f"error: unknown block type {t!r}")
 
 
@@ -110,7 +110,7 @@ def item(i: dict) -> str:
         body += f"<pre>{e(i['code'])}</pre>"
     label = i.get("label") or LABELS[s]
     return (f"<details class='item'{' open' if i.get('open') else ''}><summary><span class='pill bg-{s}'>{e(label)}</span>"
-            f"<span class='t'>{e(i.get('title'))}" + (f"<div class='sub'>{e(i['sub'])}</div>" if i.get("sub") else "")
+            f"<span class='t' title='{e(i.get('title'))}'>{e(i.get('title'))}" + (f"<span class='sub'>{e(i['sub'])}</span>" if i.get("sub") else "")
             + f"</span><span class='r'>{e(i.get('right'))}</span></summary>" + (f"<div class='b'>{body}</div>" if body else "")
             + "</details>")
 
@@ -126,7 +126,7 @@ def render(spec: dict) -> str:
            f"<div class='bar-top'><div class='crumbs'>{crumbs}</div>"
            "<button id='theme' class='theme-toggle' type='button'>◐ Dark</button></div><div class='page'>"]
     v = spec.get("verdict")
-    out.append(f"<div class='head'><div><h1>{e(spec['title'])}</h1>"
+    out.append(f"<div class='head'><div class='title'><h1>{e(spec['title'])}</h1>"
                + ("<div class='meta'>" + "".join(f"<span>{e(m)}</span>" for m in spec.get("meta", [])) + "</div>" if spec.get("meta") else "")
                + "</div>" + (f"<div class='verdict bg-{st(v.get('status'))}'>{e(v.get('text'))}</div>" if v else "") + "</div>")
     if spec.get("bar"):

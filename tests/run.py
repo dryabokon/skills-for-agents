@@ -225,11 +225,6 @@ def report(run_dir: Path, results: list[dict], meta: dict) -> None:
         "meta": [meta["when"], f"commit {meta['commit']}", f"{meta['seconds']} s"] + (["offline"] if meta["offline"] else []),
         "verdict": {"status": "bad", "text": f"✗ {c['fail']} failed"} if c["fail"] else {"status": "good", "text": "✓ All passed"},
         "bar": {"good": c["pass"], "bad": c["fail"], "note": c["skip"]},
-        "kpis": [{"label": "passed", "value": f"{c['pass']}/{total}", "status": "good" if not c["fail"] else "neutral"},
-                 {"label": "failed", "value": c["fail"], "status": "bad" if c["fail"] else "neutral"},
-                 {"label": "skipped", "value": c["skip"], "status": "note" if c["skip"] else "neutral",
-                  "hint": "needs a token, gcloud or a browser" if c["skip"] else None},
-                 {"label": "duration", "value": f"{meta['seconds']:.0f} s", "status": "neutral", "hint": f"{len(skills)} skills"}],
         "groups": [],
         "sections": [],
     }
