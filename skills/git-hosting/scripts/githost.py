@@ -193,9 +193,15 @@ class GitHub(Host):
 
     def whoami(self):
         repo = self.call(self.r())
+        user = None
+        if self.token:
+            try:
+                user = self.me()
+            except Fail:  # app tokens (GitHub Actions' GITHUB_TOKEN) may read the repo but not /user
+                user = "(token works for the repository; it is not a user token)"
         return {"host": self.host, "repo": self.repo, "default branch": repo.get("default_branch"),
-                "visibility": repo.get("visibility"), "user": self.me() if self.token else None,
-                "auth": "token" if self.token else "anonymous"}
+                "visibility": repo.get("visibility"), "user": user,
+                "auth": f"token from {self.token_source}" if self.token else "anonymous"}
 
     def prs(self, a):
         q = f"repo:{self.repo} is:pr"
@@ -662,7 +668,10 @@ def cmd_git(a):
         raise Fail("give git arguments, e.g.: githost.py git push -u origin my-branch")
     if args[0] == "push" and any(x in ("-f", "--force", "--force-with-lease") or x.startswith("--force") for x in args):
         raise Fail("force-push is refused here; run plain git yourself if you really mean it")
-    cmd = ["git", "-c", "credential.helper=", "-c", f"http.https://{h.host}/.extraheader={h.git_header()}", *args]
+    key = f"http.https://{h.host}/.extraheader"
+    # An empty value first resets headers configured elsewhere (actions/checkout stores its own), so exactly one
+    # Authorization header is sent.
+    cmd = ["git", "-c", "credential.helper=", "-c", f"{key}=", "-c", f"{key}={h.git_header()}", *args]
     print("$ git " + " ".join(args), file=sys.stderr)
     sys.exit(subprocess.run(cmd).returncode)  # the token travels as a header: never in the URL, .git/config or output
 

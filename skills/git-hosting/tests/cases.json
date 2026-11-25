@@ -45,12 +45,11 @@
   },
   {
     "id": "git-with-token-header",
-    "title": "git over HTTPS with the token as a header; nothing stored in .git/config",
+    "title": "git over HTTPS with the token as a header; .git/config is left unchanged",
     "needs": ["network", "GH_TOKEN"],
     "steps": [
-      "python scripts/githost.py git ls-remote origin HEAD",
-      "bash -c \"git config --local --get-regexp extraheader || echo no-stored-header\""
+      "bash -c \"a=$(git config --local --list | md5sum); python scripts/githost.py git ls-remote origin HEAD; b=$(git config --local --list | md5sum); [ \\\"$a\\\" = \\\"$b\\\" ] && echo config-unchanged\""
     ],
-    "expect": {"contains": ["no-stored-header"]}
+    "expect": {"contains": ["HEAD", "config-unchanged"]}
   }
 ]

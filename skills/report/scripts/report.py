@@ -198,6 +198,7 @@ def main() -> int:
         spec = json.loads(Path(a.spec).read_text(encoding="utf-8"))
         print(write(spec, Path(a.out or Path(a.spec).with_suffix(".html"))).resolve())
     elif a.cmd == "example":
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
         Path(a.out).write_text(json.dumps(EXAMPLE, indent=2, ensure_ascii=False), encoding="utf-8")
         print(Path(a.out).resolve())
     else:
