@@ -4,6 +4,7 @@
     python tests/run.py                      every skill
     python tests/run.py --skill slides gcp   some skills
     python tests/run.py --case "*plan*"      cases whose id matches
+    python tests/run.py --clean              only remove out/ and __pycache__/ left in skill folders (runs do it themselves)
     python tests/run.py --offline            skip cases that need the network
     python tests/run.py --open               open the report when done
 
@@ -129,7 +130,7 @@ def argv_for(cmd: str, bash: str | None) -> list[str]:
 
 
 def run_case(skill_dir: Path, case: dict, case_dir: Path, secrets: list[str], bash: str | None) -> dict:
-    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1", "MSYS_NO_PATHCONV": "1", **case.get("env", {})}
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1", "MSYS_NO_PATHCONV": "1", "PYTHONDONTWRITEBYTECODE": "1", **case.get("env", {})}
     start = time.time()
     log, last = [], None
     for i, cmd in enumerate(case["steps"]):
@@ -277,10 +278,14 @@ def main() -> int:
     p.add_argument("--case", help="only cases whose id matches this glob")
     p.add_argument("--offline", action="store_true", help="skip cases that need the network")
     p.add_argument("--open", action="store_true", help="open the report when done")
+    p.add_argument("--clean", action="store_true", help="only remove out/ and __pycache__/ from skill folders")
     a = p.parse_args()
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", errors="replace")
+    if a.clean:
+        print(f"removed {len(clean())} folder(s)")
+        return 0
     load_dotenv()
     secrets, cache, bash = secrets_to_mask(), {}, find_bash()
 
@@ -317,12 +322,21 @@ def main() -> int:
     meta = {"when": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "commit": commit or "-", "offline": a.offline,
             "seconds": round(time.time() - start, 1)}
     report(run_dir, results, meta)
+    clean()  # artifacts are already in the run folder
     failed = sum(r["status"] == "fail" for r in results)
     skipped = sum(r["status"] == "skip" for r in results)
     print(f"\n{len(results) - failed - skipped} passed, {failed} failed, {skipped} skipped · report: {(run_dir / 'index.html').relative_to(ROOT)}")
     if a.open:
         webbrowser.open((run_dir / "index.html").as_uri())
     return 1 if failed else 0
+
+
+def clean() -> list[Path]:
+    """Remove what runs leave inside skill folders (out/, __pycache__/), so a skill folder can be copied as is."""
+    gone = [*ROOT.glob("skills/*/out"), *ROOT.glob("skills/**/__pycache__"), *ROOT.glob("tests/__pycache__")]
+    for d in gone:
+        shutil.rmtree(d, ignore_errors=True)
+    return gone
 
 
 if __name__ == "__main__":
