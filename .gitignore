@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+tutorials/_out/
+*-shots/
+.agent-theme.css
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+.DS_Store

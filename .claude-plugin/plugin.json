@@ -1,0 +1,10 @@
+{
+  "name": "skills-for-agents",
+  "version": "0.1.0",
+  "description": "Agent skills for documentation work: HTML slide decks with PDF export, and themed diagrams (Mermaid and hand-made SVG) with automatic layout checks.",
+  "author": { "name": "dryabokon" },
+  "homepage": "https://github.com/dryabokon/skills-for-agents",
+  "repository": "https://github.com/dryabokon/skills-for-agents",
+  "license": "MIT",
+  "keywords": ["slides", "presentation", "diagrams", "mermaid", "svg", "documentation"]
+}

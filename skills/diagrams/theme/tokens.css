@@ -1,0 +1,40 @@
+/*
+  Default theme ("paper") shared by the slides and diagrams skills.
+
+  Override it without editing this file - the scripts look for a theme in this order:
+    1. --theme <file.css>          command-line argument
+    2. AGENT_THEME=<file.css>      environment variable
+    3. ./.agent-theme.css          in the current working directory
+    4. this file                   bundled default
+  A custom theme only needs the variables it changes; the rest fall back to these.
+*/
+:root {
+  /* surfaces */
+  --bg: #f4f4f2;            /* around the slide / page */
+  --surface: #ffffff;       /* slide, card, diagram node */
+  --surface-2: #f7f7f5;     /* subtle fill: table stripes, secondary cards */
+  --line: #dcdcd8;          /* borders, dividers */
+
+  /* text */
+  --ink: #1c1c1c;           /* main text */
+  --muted: #6b6b6b;         /* secondary text, captions, edge labels */
+
+  /* emphasis */
+  --accent: #1f5fbf;
+  --accent-soft: #e6eef9;
+  --warn: #c8551b;
+  --ok: #2e7d4f;
+
+  /* status legend: what is decided vs proposed vs open */
+  --status-confirmed: #1f5fbf;
+  --status-confirmed-soft: #e6eef9;
+  --status-proposed: #b7791f;
+  --status-proposed-soft: #fdf3e1;
+  --status-unclear: #c0392b;
+  --status-unclear-soft: #fbe9e7;
+
+  /* type */
+  --font-sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", Consolas, "SFMono-Regular", monospace;
+  --radius: 10px;
+}

@@ -1,0 +1,7 @@
+flowchart LR
+  client[Client app]:::confirmed -->|HTTPS| gw[API gateway]:::confirmed
+  gw --> orders[Orders service]:::confirmed
+  orders --> db[(Orders DB)]:::confirmed
+  orders -.->|order events| stream[Event stream]:::proposed
+  stream -.-> analytics[Analytics]:::proposed
+  stream -.-> who{Other consumers?}:::unclear

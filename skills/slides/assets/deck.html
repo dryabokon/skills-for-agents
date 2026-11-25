@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style id="theme">
+/*{{THEME}}*/
+</style>
+<style id="deck-engine">
+/* ===== deck engine: 1600x900 stage scaled to the window; do not edit per deck ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden; }
+#stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: center center;
+  background: var(--surface); box-shadow: 0 2px 24px rgba(0,0,0,.08); overflow: hidden; }
+.slide { position: absolute; inset: 0; padding: 96px 104px 88px; display: none; flex-direction: column; gap: 28px; overflow: hidden; }
+.slide.active { display: flex; }
+#progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--accent); transition: width .2s; }
+.slide-no { position: absolute; right: 48px; bottom: 32px; font-size: 18px; color: var(--muted); }
+.footer { position: absolute; left: 104px; bottom: 32px; font-size: 18px; color: var(--muted); }
+
+/* ===== type ===== */
+h1 { font-size: 76px; line-height: 1.08; letter-spacing: -0.5px; font-weight: 700; }
+h2 { font-size: 52px; line-height: 1.12; font-weight: 700; }
+h3 { font-size: 32px; line-height: 1.2; font-weight: 650; }
+p, li, td, th, figcaption { font-size: 30px; line-height: 1.4; }
+.lead { font-size: 38px; line-height: 1.32; color: var(--muted); max-width: 1250px; }
+.kicker { font-size: 22px; font-weight: 650; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); }
+.muted { color: var(--muted); }
+.accent { color: var(--accent); }
+.small { font-size: 22px; }
+code, .mono { font-family: var(--font-mono); font-size: .9em; }
+ul, ol { padding-left: 1.2em; display: flex; flex-direction: column; gap: 14px; }
+li::marker { color: var(--accent); }
+strong { font-weight: 700; }
+
+/* ===== components ===== */
+.card { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px 36px;
+  display: flex; flex-direction: column; gap: 14px; }
+.card.accent { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.tag { display: inline-block; font-size: 20px; font-weight: 650; padding: 4px 14px; border-radius: 999px; vertical-align: middle;
+  border: 1.5px solid currentColor; }
+.tag.confirmed { color: var(--status-confirmed); background: var(--status-confirmed-soft); }
+.tag.proposed  { color: var(--status-proposed);  background: var(--status-proposed-soft); }
+.tag.unclear   { color: var(--status-unclear);   background: var(--status-unclear-soft); }
+.note { font-size: 22px; color: var(--muted); margin-top: auto; }
+.grow { flex: 1; min-height: 0; }
+
+/* ===== layouts: put one of these classes next to .slide ===== */
+.layout-title { justify-content: center; gap: 36px; }
+.layout-title .meta { font-size: 26px; color: var(--muted); margin-top: 24px; }
+
+.layout-section { justify-content: center; background: var(--accent); color: #fff; }
+.layout-section .kicker, .layout-section .muted, .layout-section .slide-no { color: rgba(255,255,255,.75); }
+
+.layout-two-col .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; min-height: 0; }
+.layout-two-col .cols.fill { flex: 1; align-items: stretch; }  /* equal full-height columns */
+.layout-two-col .cols.wide-left { grid-template-columns: 3fr 2fr; }
+.layout-two-col .cols.wide-right { grid-template-columns: 2fr 3fr; }
+.layout-two-col .col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+.layout-metrics .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 48px; margin-block: auto; }
+.layout-metrics .metric { border-top: 4px solid var(--accent); padding-top: 24px; min-width: 0; }
+.layout-metrics .value { font-size: 88px; font-weight: 700; line-height: 1; letter-spacing: -1px; white-space: nowrap;
+  min-height: 88px; display: flex; align-items: flex-end; }  /* labels line up when value sizes differ */
+.layout-metrics .value.small-value { font-size: 64px; }
+.layout-metrics .label { font-size: 26px; color: var(--muted); margin-top: 14px; line-height: 1.3; }
+
+.layout-figure figure { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; }
+.layout-figure figure > img, .layout-figure figure > svg, .layout-figure figure > object {
+  flex: 1; min-height: 0; width: 100%; object-fit: contain; }
+.layout-figure figcaption { font-size: 22px; color: var(--muted); }
+
+.layout-quote { justify-content: center; }
+.layout-quote blockquote { font-size: 54px; line-height: 1.25; font-weight: 600; max-width: 1300px;
+  border-left: 8px solid var(--accent); padding-left: 48px; }
+.layout-quote cite { font-size: 28px; color: var(--muted); font-style: normal; padding-left: 56px; }
+
+.layout-table table { border-collapse: collapse; width: 100%; }
+.layout-table th { text-align: left; font-size: 24px; color: var(--muted); font-weight: 650; text-transform: uppercase;
+  letter-spacing: 1px; border-bottom: 2px solid var(--ink); padding: 12px 18px; }
+.layout-table td { font-size: 26px; padding: 14px 18px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.layout-table tr:nth-child(even) td { background: var(--surface-2); }
+
+/* ===== modes ===== */
+body.static #stage { left: 0; top: 0; transform: none !important; box-shadow: none; }
+body.static #progress { display: none; }
+@page { size: 1600px 900px; margin: 0; }
+@media print {
+  html, body { overflow: visible; height: auto; background: var(--surface); }
+  #stage { position: static; transform: none !important; width: 1600px; height: auto; box-shadow: none; overflow: visible; }
+  .slide { display: flex !important; position: relative; width: 1600px; height: 900px; break-after: page; page-break-after: always; }
+  #progress { display: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+<style id="deck-custom">
+/* per-deck tweaks go here (prefer existing layouts and theme variables) */
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ===== slides: one <section class="slide layout-..."> per slide; see references/layouts.md ===== -->
+
+<section class="slide layout-title">
+  <div class="kicker">{{KICKER}}</div>
+  <h1>{{TITLE}}</h1>
+  <p class="lead">{{SUBTITLE}}</p>
+  <div class="meta">{{META}}</div>
+</section>
+
+<!-- ===== end of slides ===== -->
+
+</div>
+<div id="progress"></div>
+<pre id="deck-check" hidden></pre>
+<script>
+/* ===== deck engine ===== */
+(function () {
+  const slides = Array.from(document.querySelectorAll('#stage > .slide'));
+  const stage = document.getElementById('stage');
+  const params = new URLSearchParams(location.search);
+  let current = 0;
+
+  slides.forEach((s, i) => {
+    if (!s.classList.contains('layout-title') && !s.querySelector('.slide-no')) {
+      const n = document.createElement('div'); n.className = 'slide-no'; n.textContent = i + 1; s.appendChild(n);
+    }
+  });
+
+  function fit() {
+    if (document.body.classList.contains('static')) return;
+    const k = Math.min(innerWidth / 1600, innerHeight / 900);
+    stage.style.transform = `translate(-50%, -50%) scale(${k})`;
+  }
+  function show(i, push) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, j) => s.classList.toggle('active', j === current));
+    document.getElementById('progress').style.width = ((current + 1) / slides.length * 100) + '%';
+    if (push !== false) history.replaceState(null, '', location.pathname + location.search + '#' + (current + 1));
+  }
+  function fromHash() { const n = parseInt(location.hash.slice(1), 10); return isNaN(n) ? 0 : n - 1; }
+
+  /* ?static=N : slide N at 0,0, unscaled - for screenshots */
+  if (params.has('static')) {
+    document.body.classList.add('static');
+    show((parseInt(params.get('static'), 10) || 1) - 1, false);
+  } else {
+    fit(); show(fromHash(), false);
+    addEventListener('resize', fit);
+    addEventListener('hashchange', () => show(fromHash(), false));
+    addEventListener('keydown', e => {
+      if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); show(current + 1); }
+      else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); show(current - 1); }
+      else if (e.key === 'Home') show(0);
+      else if (e.key === 'End') show(slides.length - 1);
+      else if (e.key === 'f') (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
+    });
+    stage.addEventListener('click', e => { if (!e.target.closest('a')) show(current + (e.clientX > innerWidth / 3 ? 1 : -1)); });
+  }
+
+  /* ?check : layout problems as JSON in #deck-check (read by scripts/check_deck.py) */
+  if (params.has('check')) addEventListener('load', () => {  /* after images and fonts */
+    document.body.classList.add('static');
+    const report = [];
+    slides.forEach((s, i) => {
+      show(i, false);
+      const box = s.getBoundingClientRect(), issues = [], flagged = new Set();
+      const insideFlagged = el => { for (let p = el.parentElement; p && p !== s; p = p.parentElement) if (flagged.has(p)) return true; return false; };
+      s.querySelectorAll('*').forEach(el => {
+        if (el.classList.contains('slide-no') || el.closest('[data-check="off"]') || insideFlagged(el)) return;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 && r.height === 0) return;
+        const tag = el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '');
+        const text = (el.innerText || el.getAttribute('alt') || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+        if (el.tagName === 'IMG' && el.complete && el.naturalWidth === 0) issues.push({ kind: 'broken-image', src: el.getAttribute('src') });
+        if (r.right > box.right + 1 || r.bottom > box.bottom + 1 || r.left < box.left - 1 || r.top < box.top - 1) {
+          flagged.add(el);
+          issues.push({ kind: 'outside-slide', el: tag, text, overflow_px: Math.round(Math.max(r.right - box.right, r.bottom - box.bottom, box.left - r.left, box.top - r.top)) });
+        } else if (el.scrollHeight > el.clientHeight + 2 && getComputedStyle(el).overflow !== 'visible' && el.clientHeight > 0) {
+          flagged.add(el);
+          issues.push({ kind: 'clipped', el: tag, text, hidden_px: el.scrollHeight - el.clientHeight });
+        }
+        const own = Array.from(el.childNodes).some(n => n.nodeType === 3 && n.textContent.trim());
+        if (own && !flagged.has(el) && el.scrollWidth > el.clientWidth + 2 && el.clientWidth > 0) {
+          flagged.add(el);
+          issues.push({ kind: 'text-wider-than-box', el: tag, text, overflow_px: el.scrollWidth - el.clientWidth });
+        }
+        const fs = parseFloat(getComputedStyle(el).fontSize);
+        if (own && fs < 18) issues.push({ kind: 'tiny-text', el: tag, text, font_px: fs });
+      });
+      const words = (s.innerText || '').trim().split(/\s+/).filter(Boolean).length;
+      if (words > 90) issues.push({ kind: 'too-much-text', words });
+      const headings = s.querySelectorAll('h1, h2').length;
+      report.push({ slide: i + 1, layout: Array.from(s.classList).find(c => c.startsWith('layout-')) || null,
+        title: (s.querySelector('h1, h2, blockquote') || {}).innerText || null, words, headings, issues });
+    });
+    document.getElementById('deck-check').textContent = JSON.stringify({ slides: slides.length, report });
+  });
+})();
+</script>
+</body>
+</html>

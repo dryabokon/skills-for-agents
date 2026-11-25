@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540">
+  <!-- theme styles are inlined here by: python scripts/diagram.py svg <this file> -->
+  <style id="theme"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrowhead" d="M 0 1 L 9 5 L 0 9 z"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="arrowhead accent" d="M 0 1 L 9 5 L 0 9 z"/>
+    </marker>
+  </defs>
+
+  <!-- ===== heading ===== -->
+  <text class="heading" x="40" y="52">Request flow</text>
+  <text class="caption" x="40" y="58">What happens when a client places an order</text>
+
+  <!-- ===== groups first, so they sit behind nodes ===== -->
+  <g class="group" id="platform">
+    <rect x="300" y="116" width="620" height="270" rx="12"/>
+    <text class="group-title" x="320" y="142">Platform</text>
+  </g>
+
+  <!-- ===== nodes: <g class="node [accent|muted|confirmed|proposed|unclear]"> with the shape first ===== -->
+  <g class="node" id="client">
+    <rect x="40" y="200" width="170" height="72" rx="10"/>
+    <text class="title" x="56" y="231">Client</text>
+    <text class="sub" x="56" y="252">web / mobile</text>
+  </g>
+
+  <g class="node accent" id="gateway">
+    <rect x="340" y="200" width="170" height="72" rx="10"/>
+    <text class="title" x="356" y="231">API gateway</text>
+    <text class="sub" x="356" y="252">auth, routing</text>
+  </g>
+
+  <g class="node confirmed" id="orders">
+    <rect x="620" y="166" width="190" height="72" rx="10"/>
+    <text class="title" x="636" y="197">Orders and payments service</text>
+    <text class="sub" x="636" y="218">exists today</text>
+  </g>
+
+  <g class="node proposed" id="stream">
+    <rect x="620" y="288" width="190" height="72" rx="10"/>
+    <text class="title" x="636" y="319">Event stream</text>
+    <text class="sub" x="636" y="340">to be added</text>
+  </g>
+
+  <!-- ===== edges: paths end ~8px before the target so the arrowhead touches the border ===== -->
+  <path class="edge accent" d="M 210 236 H 332" marker-end="url(#arrow-accent)"/>
+  <g>
+    <rect class="edge-label-bg" x="246" y="214" width="52" height="16" rx="3"/>
+    <text class="edge-label" x="272" y="226" text-anchor="middle">HTTPS</text>
+  </g>
+
+  <path class="edge" d="M 510 226 C 565 226 565 202 612 202" marker-end="url(#arrow)"/>
+  <path class="edge dashed" d="M 510 248 C 565 248 565 324 612 324" marker-end="url(#arrow)"/>
+  <g>
+    <rect class="edge-label-bg" x="536" y="290" width="52" height="16" rx="3"/>
+    <text class="edge-label" x="562" y="302" text-anchor="middle">events</text>
+  </g>
+
+  <!-- ===== legend: same three statuses as the slides skill ===== -->
+  <g class="legend" transform="translate(40, 470)">
+    <rect class="confirmed" x="0" y="0" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text x="22" y="12">confirmed</text>
+    <rect class="proposed" x="110" y="0" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text x="132" y="12">proposed</text>
+    <rect class="unclear" x="220" y="0" width="14" height="14" rx="3" stroke-width="1.5"/>
+    <text x="242" y="12">to clarify</text>
+  </g>
+</svg>

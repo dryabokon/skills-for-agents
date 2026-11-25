@@ -1,0 +1,61 @@
+<section class="slide layout-bullets">
+  <div class="kicker">Problem</div>
+  <h2>Nightly batch misses the morning report</h2>
+  <ul>
+    <li>Volume grew <strong>4×</strong> in a year; the job now runs 7 h</li>
+    <li>A single failure delays everything by a day</li>
+    <li>Analysts work on data that is 30 h old</li>
+  </ul>
+  <p class="note">Source: job history, January – December</p>
+</section>
+
+<section class="slide layout-two-col">
+  <h2>As-is vs to-be</h2>
+  <div class="cols">
+    <div class="col card">
+      <h3>As-is <span class="tag confirmed">confirmed</span></h3>
+      <ul>
+        <li>One nightly job, 7 h</li>
+        <li>Manual restarts</li>
+        <li>Data 30 h old</li>
+      </ul>
+    </div>
+    <div class="col card accent">
+      <h3>To-be <span class="tag proposed">proposed</span></h3>
+      <ul>
+        <li>Streaming ingest</li>
+        <li>Automatic retries</li>
+        <li>Data in minutes</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="slide layout-section">
+  <div class="kicker">Part 2</div>
+  <h1>What it gives us</h1>
+</section>
+
+<section class="slide layout-metrics">
+  <h2>What changes</h2>
+  <div class="metrics">
+    <div class="metric"><div class="value small-value">7 h → 5 min</div><div class="label">data latency</div></div>
+    <div class="metric"><div class="value">−38%</div><div class="label">compute cost</div></div>
+    <div class="metric"><div class="value accent">0</div><div class="label">manual restarts</div></div>
+  </div>
+</section>
+
+<section class="slide layout-table">
+  <h2>Options we compared</h2>
+  <table>
+    <tr><th>Option</th><th>Latency</th><th>Cost</th><th>Status</th></tr>
+    <tr><td>Bigger batch cluster</td><td>4 h</td><td>+20%</td><td><span class="tag unclear">rejected</span></td></tr>
+    <tr><td>Micro-batch</td><td>30 min</td><td>±0</td><td><span class="tag proposed">fallback</span></td></tr>
+    <tr><td>Streaming</td><td>5 min</td><td>−38%</td><td><span class="tag confirmed">chosen</span></td></tr>
+  </table>
+</section>
+
+<section class="slide layout-quote">
+  <blockquote>We don't need faster batch. We need no batch.</blockquote>
+  <cite>— Head of analytics</cite>
+</section>

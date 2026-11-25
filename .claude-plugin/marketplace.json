@@ -1,0 +1,12 @@
+{
+  "name": "dryabokon",
+  "owner": { "name": "dryabokon" },
+  "metadata": { "description": "Skills for coding agents: docs, slides, diagrams." },
+  "plugins": [
+    {
+      "name": "skills-for-agents",
+      "source": "./",
+      "description": "Slides and diagrams skills with runnable tutorials."
+    }
+  ]
+}
