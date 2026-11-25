@@ -13,3 +13,7 @@ skills/*/out/
 
 # test runs (python tests/run.py)
 runs/
+
+# IDE settings
+.idea/
+.vscode/
