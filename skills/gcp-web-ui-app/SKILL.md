@@ -1,6 +1,6 @@
 ---
 name: gcp-web-ui-app
-description: Build or change a web UI app on Google Cloud Run - tabs Settings, Runs, Run result, Architecture - where a user configures a run, starts it, watches it and browses past results, deployed to Cloud Run behind Google sign-in (IAP). Use when the task is an app of the shape "configure -> run -> see results", or when adding a tab, a setting, a result view or a deploy to such an app.
+description: Project skill (copy into one project). Build or change a web UI app on Google Cloud Run - tabs Settings, Runs, Run result, Architecture - where a user configures a run, starts it, watches it and browses past results, deployed to Cloud Run behind Google sign-in (IAP). Use when the task is an app of the shape "configure -> run -> see results", or when adding a tab, a setting, a result view or a deploy to such an app.
 ---
 
 # GCP web UI app

@@ -1,0 +1,19 @@
+[
+  {
+    "id": "unit",
+    "title": "Skill layout: SKILL.md points at files that exist, the template's domain contract holds",
+    "steps": ["python -m unittest discover -s tests -v"]
+  },
+  {
+    "id": "template-tests",
+    "title": "The template's own tests pass: pages, run lifecycle, invalid settings, failed run",
+    "steps": ["python -m unittest discover -s template/tests -t template -v"],
+    "expect": {"contains": ["OK"]}
+  },
+  {
+    "id": "new-project",
+    "title": "A new project made from the skill passes its tests and completes a run over HTTP",
+    "steps": ["bash examples/new-project.sh"],
+    "expect": {"contains": ["run 001-", ": done - Ended at"]}
+  }
+]
