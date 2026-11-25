@@ -135,7 +135,9 @@ class Host:
                 detail = d.get("message") or d.get("error") or detail
             except (ValueError, AttributeError):
                 pass
-            hint = {401: f" - set {self.token_var} (or it has expired)",
+            src = getattr(self, "token_source", None)
+            hint = {401: (f" - the token from {src} was rejected (revoked or expired); replace it, or set "
+                          f"{self.token_var} in .env, which wins") if src else f" - set {self.token_var}",
                     403: f" - not allowed or rate-limited; a {self.token_var} with more scopes may help",
                     404: f" - not found, or private and {self.token_var} is missing"}.get(e.code, "")
             raise Fail(f"HTTP {e.code} for {url.split('?')[0]}{hint}\n  {str(detail)[:300]}")
@@ -171,7 +173,8 @@ class GitHub(Host):
     def __init__(self, host, repo, timeout):
         super().__init__(host, repo, timeout)
         self.api = "https://api.github.com" if host == "github.com" else f"https://{host}/api/v3"
-        self.token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
+        self.token_source = next((v for v in ("GH_TOKEN", "GITHUB_TOKEN") if os.environ.get(v)), None)
+        self.token = os.environ.get(self.token_source, "") if self.token_source else ""
 
     def auth(self):
         h = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
@@ -338,6 +341,7 @@ class GitLab(Host):
         self.api = f"https://{host}/api/v4"
         self.pid = urllib.parse.quote(repo, safe="")
         self.token = os.environ.get("GITLAB_TOKEN", "")
+        self.token_source = "GITLAB_TOKEN" if self.token else None
 
     def auth(self):
         return {"PRIVATE-TOKEN": self.token} if self.token else {}
