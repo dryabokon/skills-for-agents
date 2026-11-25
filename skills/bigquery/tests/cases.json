@@ -1,0 +1,39 @@
+[
+  {
+    "id": "unit",
+    "title": "Offline logic: price incl. the 10 MB minimum, refs, refusing statements that change data",
+    "steps": ["python -m unittest discover -s tests -v"]
+  },
+  {
+    "id": "explore-for-free",
+    "title": "Tables, schema and freshness of a public dataset from metadata (0 bytes)",
+    "needs": ["network", "gcloud"],
+    "steps": [
+      "python scripts/bq.py tables bigquery-public-data.samples",
+      "python scripts/bq.py schema bigquery-public-data.samples.shakespeare",
+      "python scripts/bq.py freshness bigquery-public-data.samples --stale-days 365"
+    ],
+    "expect": {"contains": ["STALE", "shakespeare"]}
+  },
+  {
+    "id": "dry-run-prices-a-big-query",
+    "title": "A 258 GB query is priced without running it",
+    "needs": ["network", "gcloud"],
+    "steps": ["python scripts/bq.py query \"SELECT * FROM `bigquery-public-data.samples.trigrams`\" --dry-run"],
+    "expect": {"contains": ["258.1 GB", "nothing was billed"]}
+  },
+  {
+    "id": "over-the-cap-is-refused",
+    "title": "The same query without --dry-run is refused over the 1 GB cap",
+    "needs": ["network", "gcloud"],
+    "steps": ["python scripts/bq.py query \"SELECT * FROM `bigquery-public-data.samples.trigrams`\" --max-gb 1"],
+    "expect": {"exit": 1, "contains": ["over the 1.0 GB cap"]}
+  },
+  {
+    "id": "small-query-runs",
+    "title": "A small query runs and reports its cost (~$0.0001, or $0 when served from cache)",
+    "needs": ["network", "gcloud"],
+    "steps": ["python scripts/bq.py query \"SELECT corpus, SUM(word_count) AS words FROM `bigquery-public-data.samples.shakespeare` GROUP BY corpus ORDER BY words DESC\" --limit 3"],
+    "expect": {"contains": ["hamlet"], "contains_any": ["billed 10.0 MB", "billed 0 B"]}
+  }
+]

@@ -10,12 +10,13 @@ jobs:
           python-version: "3.12"
       - name: Repository checks
         run: python .github/check.py
-      - name: Examples run end to end
+      - name: Skill tests (cases needing gcloud or private tokens are skipped here)
         env:
           GH_TOKEN: ${{ github.token }}  # read-only, this repository; public data elsewhere
-        run: |
-          (cd skills/slides   && bash examples/build-a-deck.sh)
-          (cd skills/diagrams && bash examples/svg-and-check.sh)
-          (cd skills/diagrams && bash examples/mermaid-flow.sh)
-          (cd skills/azure-devops && bash examples/status-tour.sh && bash examples/why-did-build-fail.sh && bash examples/pr-dry-run.sh)
-          (cd skills/git-hosting && bash examples/status-tour.sh && bash examples/why-did-ci-fail.sh && bash examples/pr-and-git.sh)
+        run: python tests/run.py
+      - name: Keep the test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: runs/

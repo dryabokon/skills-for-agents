@@ -1,0 +1,37 @@
+[
+  {
+    "id": "unit",
+    "title": "Offline logic: slide count, theme lookup and overrides, new deck",
+    "steps": ["python -m unittest discover -s tests -v"]
+  },
+  {
+    "id": "build-a-deck",
+    "title": "The example deck builds, checks clean, screenshots and exports to PDF",
+    "needs": ["chrome", "bash"],
+    "steps": ["bash examples/build-a-deck.sh"],
+    "expect": {"contains": ["7 slides, 0 issue(s) - layout is clean", "streaming.pdf"]},
+    "artifacts": ["out/streaming.pdf", "out/streaming-shots/slide-01.png", "out/streaming-shots/slide-03.png", "out/streaming-shots/slide-05.png"]
+  },
+  {
+    "id": "check-catches-overflow",
+    "title": "The layout check fails a slide whose text runs off the slide",
+    "needs": ["chrome"],
+    "steps": [
+      "python scripts/deck.py new out/test-overflow.html --title Overflow --content tests/overflow-slide.html --force",
+      "python scripts/deck.py check out/test-overflow.html"
+    ],
+    "expect": {"exit": 1, "contains": ["outside-slide", "too-much-text"]}
+  },
+  {
+    "id": "restyle-with-theme",
+    "title": "deck.py theme re-inlines another theme into an existing deck",
+    "needs": ["chrome", "bash"],
+    "steps": [
+      "bash -c \"printf ':root { --accent: #0f766e; }' > out/test-theme.css\"",
+      "python scripts/deck.py new out/test-theme.html --title Theme --force",
+      "python scripts/deck.py theme out/test-theme.html --theme out/test-theme.css",
+      "bash -c \"grep -c '#0f766e' out/test-theme.html\""
+    ],
+    "expect": {"contains_any": ["1", "2"]}
+  }
+]

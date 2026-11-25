@@ -1,0 +1,15 @@
+[
+  {
+    "id": "unit",
+    "title": "Offline logic: status aliases, every block, escaping, bar, unknown blocks",
+    "steps": ["python -m unittest discover -s tests -v"]
+  },
+  {
+    "id": "example-light-and-dark",
+    "title": "The example report renders and is screenshot in the light and the dark theme",
+    "needs": ["chrome", "bash"],
+    "steps": ["bash examples/weekly-checks.sh"],
+    "expect": {"contains": ["weekly.html", "weekly.png", "weekly.dark.png"]},
+    "artifacts": ["out/weekly.png", "out/weekly.dark.png", "out/weekly.html"]
+  }
+]

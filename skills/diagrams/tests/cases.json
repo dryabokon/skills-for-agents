@@ -1,0 +1,35 @@
+[
+  {
+    "id": "unit",
+    "title": "Offline logic: status classDefs, theme inlining, SVG size",
+    "steps": ["python -m unittest discover -s tests -v"]
+  },
+  {
+    "id": "svg-starter-is-clean",
+    "title": "The starter SVG renders in the theme with no layout issues",
+    "needs": ["chrome"],
+    "steps": [
+      "python scripts/diagram.py new-svg out/test-starter.svg --force",
+      "python scripts/diagram.py svg out/test-starter.svg"
+    ],
+    "expect": {"contains": ["4 nodes, 0 issue(s) - layout is clean"]},
+    "artifacts": ["out/test-starter.out.png", "out/test-starter.out.svg"]
+  },
+  {
+    "id": "svg-check-catches-mistakes",
+    "title": "The SVG check fails a diagram with a label wider than its box and overlapping text",
+    "needs": ["chrome"],
+    "steps": ["python scripts/diagram.py svg examples/broken.svg --out out/test-broken"],
+    "expect": {"exit": 1, "contains": ["text-overflows-node", "need_width=", "texts-overlap"]},
+    "artifacts": ["out/test-broken.png"]
+  },
+  {
+    "id": "mermaid-renders",
+    "title": "A Mermaid flowchart with statuses renders to SVG and PNG",
+    "needs": ["chrome", "node", "network"],
+    "timeout": 900,
+    "steps": ["python scripts/diagram.py mermaid examples/order-flow.mmd --out out/test-order-flow"],
+    "expect": {"contains": ["test-order-flow.svg", "test-order-flow.png"]},
+    "artifacts": ["out/test-order-flow.png"]
+  }
+]

@@ -6,7 +6,7 @@
 1. every skills/<name>/SKILL.md follows the Agent Skills spec (https://agentskills.io/specification):
    name == folder, kebab-case <= 64, description 1..1024, only portable frontmatter keys, < 500 lines,
    relative links resolve
-2. every skill has at least one runnable example: skills/<name>/examples/*.sh
+2. every skill has a runnable example (examples/*.sh), test cases (tests/cases.json) and unit tests (tests/test_*.py)
 3. shared helpers several skills carry (scripts/_*.py, assets/theme.css)
    are identical in every skill
 4. all Python compiles
@@ -15,6 +15,7 @@
 """
 from __future__ import annotations
 
+import json
 import py_compile
 import re
 import shutil
@@ -87,6 +88,18 @@ def check_skill(folder: Path) -> None:
             err(f"{name}: SKILL.md links to missing file {target}")
     if not any((folder / "examples").glob("*.sh")):
         err(f"{name}: no runnable example in examples/*.sh (every skill needs one)")
+    cases = folder / "tests" / "cases.json"
+    if not cases.is_file():
+        err(f"{name}: no tests/cases.json (run by tests/run.py)")
+    else:
+        try:
+            ids = [c["id"] for c in json.loads(cases.read_text(encoding="utf-8"))]
+            if len(ids) != len(set(ids)):
+                err(f"{name}: duplicate case ids in tests/cases.json")
+        except (ValueError, KeyError, TypeError) as e:
+            err(f"{name}: tests/cases.json is not a list of cases with an id: {e}")
+    if not any((folder / "tests").glob("test_*.py")):
+        err(f"{name}: no offline unit tests in tests/test_*.py")
 
 
 def text_files():

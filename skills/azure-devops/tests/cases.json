@@ -1,0 +1,46 @@
+[
+  {
+    "id": "unit",
+    "title": "Offline logic: URLs, .env lookup, error-line filter, settings",
+    "steps": ["python -m unittest discover -s tests -v"]
+  },
+  {
+    "id": "public-build-failure",
+    "title": "Latest failed build of a public project: first failing step and its errors (no token)",
+    "needs": ["network"],
+    "env": {"AZURE_DEVOPS_ORG": "dnceng-public", "AZURE_DEVOPS_PROJECT": "public", "AZURE_DEVOPS_PAT": ""},
+    "steps": ["python scripts/ado.py build last-failed --log-lines 10 --max-steps 1"],
+    "expect": {"contains": ["FAILED", "error"]}
+  },
+  {
+    "id": "public-pr-and-dry-run",
+    "title": "A public PR by URL, and pr-create stays a dry run",
+    "needs": ["network"],
+    "env": {"AZURE_DEVOPS_ORG": "dnceng-public", "AZURE_DEVOPS_PROJECT": "public", "AZURE_DEVOPS_PAT": ""},
+    "steps": [
+      "python scripts/ado.py pr https://dev.azure.com/dnceng-public/public/_git/dotnet-public-wiki/pullrequest/5",
+      "python scripts/ado.py pr-create --repo dotnet-public-wiki --source main --title T --description d"
+    ],
+    "expect": {"contains": ["nothing was sent"]}
+  },
+  {
+    "id": "anonymous-limits-are-explained",
+    "title": "Without a token, --mine says what is needed instead of failing obscurely",
+    "needs": ["network"],
+    "env": {"AZURE_DEVOPS_ORG": "dnceng-public", "AZURE_DEVOPS_PROJECT": "public", "AZURE_DEVOPS_PAT": ""},
+    "steps": ["python scripts/ado.py prs --mine"],
+    "expect": {"exit": 1, "contains": ["need AZURE_DEVOPS_PAT"]}
+  },
+  {
+    "id": "own-project-tour",
+    "title": "Your project from .env: whoami, my PRs, my work items, latest failed build",
+    "needs": ["network", "AZURE_DEVOPS_PAT", "AZURE_DEVOPS_ORG"],
+    "steps": [
+      "python scripts/ado.py whoami",
+      "python scripts/ado.py prs --mine --top 5",
+      "python scripts/ado.py work-items --mine --top 5",
+      "python scripts/ado.py build last-failed --log-lines 10 --max-steps 1"
+    ],
+    "expect": {"contains": ["FAILED"]}
+  }
+]

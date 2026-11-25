@@ -10,3 +10,6 @@ node_modules/
 
 # example output inside skill folders
 skills/*/out/
+
+# test runs (python tests/run.py)
+runs/

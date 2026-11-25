@@ -58,5 +58,6 @@ Run from this folder (`bash examples/<name>.sh`); they use public datasets, bill
 
 - Price shown is the on-demand list price ($6.25 per TiB, 10 MB minimum per query); free tier, editions and
   reservations change what is actually paid.
+- An identical query repeated within ~24 h comes from BigQuery's cache and is billed 0 B.
 - `costs` reads `region-<location>.INFORMATION_SCHEMA.JOBS_BY_PROJECT`: jobs in another location are not in it.
 - Tables of another project are referenced as `project.dataset.table`; the billing project still pays.
