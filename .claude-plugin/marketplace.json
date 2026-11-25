@@ -6,7 +6,7 @@
     {
       "name": "skills-for-agents",
       "source": "./",
-      "description": "Slides and diagrams skills with runnable tutorials."
+      "description": "Slides and diagrams skills with runnable examples."
     }
   ]
 }

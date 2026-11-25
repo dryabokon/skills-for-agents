@@ -9,9 +9,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Repository checks
-        run: python tools/check_repo.py
-      - name: Tutorials run end to end
+        run: python .github/check.py
+      - name: Examples run end to end
         run: |
-          python tutorials/slides/01_build_a_deck.py
-          python tutorials/diagrams/02_svg_and_check.py
-          python tutorials/diagrams/01_mermaid_flow.py
+          (cd skills/slides   && bash examples/build-a-deck.sh)
+          (cd skills/diagrams && bash examples/svg-and-check.sh)
+          (cd skills/diagrams && bash examples/mermaid-flow.sh)

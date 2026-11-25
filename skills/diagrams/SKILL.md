@@ -7,7 +7,7 @@ compatibility: Requires Python 3.9+ and Chrome, Edge or Chromium. Mermaid render
 
 # Diagrams
 
-Two ways to draw, one theme (`theme/tokens.css`, shared with the slides skill) and one status legend.
+Two ways to draw, one theme (`assets/theme.css`, the same file as in the slides skill) and one status legend.
 
 **Paths.** Commands are relative to this skill's folder (in Claude Code: `${CLAUDE_SKILL_DIR}`).
 
@@ -51,6 +51,12 @@ SVG: `<g class="node proposed">`. Put a legend on the diagram whenever statuses 
 - Mermaid errors are printed as the parser reports them; the usual culprits are unquoted labels with
   `()`, `:` or `/` — write `A["Label (x)"]`.
 - Theme colours come from the tokens; do not add `%%{init: …}%%` theme blocks unless the user asks.
+
+## Examples
+
+Run from this folder; results go to `out/`. They use exactly the commands above.
+- `examples/mermaid-flow.sh` - `examples/order-flow.mmd` with status classes -> themed SVG + PNG.
+- `examples/svg-and-check.sh` - starter SVG -> themed SVG + PNG, then `examples/broken.svg` to show what the check reports.
 
 ## Theme
 

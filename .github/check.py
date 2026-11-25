@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Repository checks - run before every commit and in CI.
 
-    python tools/check_repo.py
+    python .github/check.py
 
 1. every skills/<name>/SKILL.md follows the Agent Skills spec (https://agentskills.io/specification):
    name == folder, kebab-case <= 64, description 1..1024, only portable frontmatter keys, < 500 lines,
    relative links resolve
-2. every skill has a runnable tutorial in tutorials/<name>/
-3. shared files are in sync (tools/sync_shared.py --check)
+2. every skill has at least one runnable example: skills/<name>/examples/*.sh
+3. files that several skills carry (same relative path, e.g. scripts/_browser.py, assets/theme.css)
+   are identical in every skill
 4. all Python compiles
 5. nothing that looks like a secret is committed
 6. `claude plugin validate .` passes (skipped when the claude CLI is not installed)
@@ -32,7 +33,7 @@ SECRET_RES = [
         r"(?i)(api[_-]?key|token|password|secret)\s*[:=]\s*['\"][A-Za-z0-9_\-/+=]{20,}['\"]",
     )
 ]
-SKIP_DIRS = {".git", "_out", "__pycache__", "node_modules"}
+SKIP_DIRS = {".git", "out", "__pycache__", "node_modules"}
 errors: list[str] = []
 
 
@@ -84,9 +85,8 @@ def check_skill(folder: Path) -> None:
     for target in re.findall(r"\]\(([^)#:]+)\)", text):
         if not (folder / target).exists():
             err(f"{name}: SKILL.md links to missing file {target}")
-    tutorials = ROOT / "tutorials" / name
-    if not any(tutorials.glob("*.py")):
-        err(f"{name}: no runnable tutorial in tutorials/{name}/ (every skill needs one)")
+    if not any((folder / "examples").glob("*.sh")):
+        err(f"{name}: no runnable example in examples/*.sh (every skill needs one)")
 
 
 def text_files():
@@ -102,8 +102,15 @@ def main() -> int:
     for folder in skills:
         check_skill(folder)
 
-    if subprocess.run([sys.executable, str(ROOT / "tools" / "sync_shared.py"), "--check"]).returncode:
-        err("shared files out of sync - run: python tools/sync_shared.py")
+    copies: dict[str, list[Path]] = {}
+    for folder in skills:
+        for f in folder.rglob("*"):
+            if f.is_file() and f.name != "SKILL.md" and not (SKIP_DIRS & set(f.relative_to(folder).parts)):
+                copies.setdefault(f.relative_to(folder).as_posix(), []).append(f)
+    for rel, files in copies.items():
+        if len(files) > 1 and len({f.read_bytes() for f in files}) > 1:
+            names = ", ".join(f.relative_to(ROOT).as_posix() for f in files)
+            err(f"{rel} differs between skills ({names}) - keep the copies identical")
 
     for path in text_files():
         rel = path.relative_to(ROOT).as_posix()
@@ -112,7 +119,7 @@ def main() -> int:
                 py_compile.compile(str(path), doraise=True, cfile=None)
             except py_compile.PyCompileError as e:
                 err(f"{rel}: does not compile: {e.msg}")
-        if rel == "tools/check_repo.py":
+        if rel == ".github/check.py":
             continue
         content = path.read_text(encoding="utf-8", errors="ignore")
         for rx in SECRET_RES:

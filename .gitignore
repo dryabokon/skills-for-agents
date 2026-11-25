@@ -1,7 +1,5 @@
 __pycache__/
 *.pyc
-tutorials/_out/
-*-shots/
 .agent-theme.css
 .env
 .env.*
@@ -9,3 +7,6 @@ tutorials/_out/
 .venv/
 node_modules/
 .DS_Store
+
+# example output inside skill folders
+skills/*/out/

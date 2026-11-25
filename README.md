@@ -1,9 +1,9 @@
 # skills-for-agents
 
-Reusable [Agent Skills](https://agentskills.io) for documentation work: slide decks, diagrams, and
-(soon) reports and git hosting. Each skill is a folder with a `SKILL.md` for the agent and plain scripts
-that do the work, so **what the agent runs is exactly what you can run by hand** — every skill ships a
-tutorial that does just that.
+Reusable [Agent Skills](https://agentskills.io) for documentation work: slide decks and diagrams
+(reports and git hosting next). Each skill is a folder with a `SKILL.md` for the agent and plain scripts
+that do the work. **What the agent runs is exactly what you can run by hand** — every skill has an
+`examples/` script made of the same commands.
 
 | Skill | What it does | Needs |
 |---|---|---|
@@ -13,16 +13,22 @@ tutorial that does just that.
 No pip packages: the scripts use the standard library and drive a locally installed Chromium-based browser
 in headless mode (set `CHROME_PATH` if it is not found).
 
-## Try it (no agent needed)
+## Try it by hand
 
 ```bash
-git clone https://github.com/dryabokon/skills-for-agents && cd skills-for-agents
-python tutorials/slides/01_build_a_deck.py --open        # 7-slide deck -> check -> screenshots -> PDF
-python tutorials/diagrams/02_svg_and_check.py --open     # themed SVG + the layout check catching mistakes
-python tutorials/diagrams/01_mermaid_flow.py --open      # Mermaid flowchart with status colours
+git clone https://github.com/dryabokon/skills-for-agents
+cd skills-for-agents/skills/slides
+bash examples/build-a-deck.sh          # -> out/streaming.html, out/streaming.pdf, out/streaming-shots/
 ```
 
-Each tutorial prints every command before running it; results go to `tutorials/_out/`. See [tutorials/](tutorials/README.md).
+```bash
+cd skills-for-agents/skills/diagrams
+bash examples/svg-and-check.sh         # -> out/architecture.out.svg/.png, and what the check reports on a broken one
+bash examples/mermaid-flow.sh          # -> out/order-flow.svg/.png
+```
+
+The example files are short lists of commands — open one, copy any line, change the arguments.
+On Windows run them from Git Bash, or paste the lines into PowerShell one by one.
 
 ## Install for an agent
 
@@ -46,32 +52,34 @@ self-contained.
 
 ## Theme
 
-Slides and diagrams share one set of CSS variables ([shared/theme/tokens.css](shared/theme/tokens.css)).
-Override any of them with a small CSS file — `--theme my.css`, the `AGENT_THEME` env var, or
-`.agent-theme.css` in the working directory:
+Slides and diagrams use the same CSS variables (`assets/theme.css` in each skill). Override any of them with
+a small CSS file — `--theme my.css`, the `AGENT_THEME` env var, or `.agent-theme.css` in the working directory:
 
 ```css
 :root { --accent: #0f766e; --accent-soft: #e6f4f2; }
 ```
 
-## Repository layout
+## Layout
 
 ```
-skills/<name>/          SKILL.md + scripts/ + references/ + assets/   (Agent Skills format)
-tutorials/<name>/       runnable walkthroughs using the same commands as SKILL.md
-shared/                 source of files copied into several skills (theme, browser helper)
-tools/                  sync_shared.py, check_repo.py
-.claude-plugin/         plugin.json + marketplace.json (Claude Code packaging only)
+skills/<name>/
+  SKILL.md        instructions for the agent
+  scripts/        the tools (one CLI per skill)
+  assets/         templates and theme
+  references/     detail the agent reads on demand
+  examples/       runnable *.sh using the same commands as SKILL.md; output goes to out/ (git-ignored)
+.claude-plugin/   plugin + marketplace manifests (Claude Code packaging)
+.github/          CI and check.py
 ```
 
-## Contributing / changing a skill
+## Changing a skill
 
 ```bash
-python tools/sync_shared.py     # after editing anything under shared/
-python tools/check_repo.py      # spec rules, tutorials present, sync, secrets, `claude plugin validate`
+python .github/check.py      # spec rules, examples present, shared copies identical, secrets, `claude plugin validate`
 ```
-Rules: a skill never reaches outside its own folder; every command in a `SKILL.md` is covered by a tutorial;
-no credentials or company-specific hosts in code — configuration comes from the environment.
+Rules: a skill never reaches outside its own folder; files two skills both carry (`scripts/_browser.py`,
+`assets/theme.css`) stay identical; every command in a `SKILL.md` appears in an example; no credentials or
+company-specific hosts in code — configuration comes from the environment.
 
 ## License
 

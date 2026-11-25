@@ -1,5 +1,6 @@
 /*
-  Default theme ("paper") shared by the slides and diagrams skills.
+  Default theme ("paper"). The same file sits in skills/slides and skills/diagrams so each skill
+  works on its own; keep the two copies identical (CI checks it).
 
   Override it without editing this file - the scripts look for a theme in this order:
     1. --theme <file.css>          command-line argument

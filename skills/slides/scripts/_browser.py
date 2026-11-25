@@ -1,7 +1,7 @@
 """Headless Chrome / Edge / Chromium helpers and theme lookup (standard library only).
 
-Shared by the slides and diagrams skills; the copy inside each skill is generated from
-shared/scripts/_browser.py by tools/sync_shared.py - edit that one, not the copies.
+The same file sits in skills/slides and skills/diagrams so each skill works on its own;
+keep the two copies identical (CI checks it).
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-BUNDLED_THEME = HERE.parent / "theme" / "tokens.css"
+BUNDLED_THEME = HERE.parent / "assets" / "theme.css"
 
 _CANDIDATES = {
     "win32": [

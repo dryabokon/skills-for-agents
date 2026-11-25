@@ -14,7 +14,8 @@ It opens in any browser, prints to PDF one slide per page, and needs no build st
 from elsewhere call e.g. `python <this-folder>/scripts/deck.py`. Everything goes through one CLI:
 
 ```bash
-python scripts/deck.py new   DECK.html --title "…" [--kicker "…"] [--subtitle "…"] [--meta "…"] [--theme my.css]
+python scripts/deck.py new   DECK.html --title "…" [--kicker "…"] [--subtitle "…"] [--meta "…"]
+                             [--content slides.html] [--theme my.css] [--force]
 python scripts/deck.py check DECK.html                  # layout problems per slide; exit 1 if any
 python scripts/deck.py shots DECK.html [--slides 2,5]   # PNG per slide -> DECK-shots/
 python scripts/deck.py pdf   DECK.html [--out x.pdf]    # one 16:9 page per slide
@@ -25,7 +26,8 @@ python scripts/deck.py theme DECK.html --theme my.css   # restyle an existing de
 
 1. **Plan the story first**, in chat or in your head: audience, the one thing they must leave with, 5–12 slides.
    One message per slide; the heading states the message ("Batch misses the morning report"), not the topic ("Batch").
-2. `deck.py new` creates the file with the title slide and the theme inlined.
+2. `deck.py new` creates the file with the title slide and the theme inlined
+   (`--content file.html` adds slides already written in a separate file).
 3. **Write the slides** between `<!-- ===== slides` and `<!-- ===== end of slides ===== -->`, picking a layout per
    slide from [references/layouts.md](references/layouts.md): `title`, `section`, `bullets`, `two-col`, `metrics`,
    `figure`, `quote`, `table`. Copy the snippet, replace the text. Do not invent new CSS unless no layout fits.
@@ -46,9 +48,15 @@ python scripts/deck.py theme DECK.html --theme my.css   # restyle an existing de
   the deck one file.
 - Language: write slides in the language the user writes to you in, unless told otherwise.
 
+## Example
+
+`examples/build-a-deck.sh` is a complete run - new deck with `examples/demo-slides.html`, check, shots, PDF -
+using exactly the commands above. Run it from this folder (`bash examples/build-a-deck.sh`) to see a finished
+deck in `out/`, or read `examples/demo-slides.html` for well-formed slides of every common layout.
+
 ## Theme
 
-Colours and fonts are CSS variables (`theme/tokens.css`). A custom theme overrides only what it changes:
+Colours and fonts are CSS variables (`assets/theme.css`). A custom theme overrides only what it changes:
 
 ```css
 :root { --accent: #0f766e; --accent-soft: #e6f4f2; --font-sans: "Inter", sans-serif; }

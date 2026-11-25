@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Single-file HTML slide decks: create, check layout, screenshot, export to PDF.
 
-    python deck.py new    talk.html --title "Quarterly review" [--subtitle ...] [--kicker ...] [--meta ...] [--theme my.css]
+    python deck.py new    talk.html --title "Quarterly review" [--subtitle ...] [--kicker ...] [--meta ...]
+                          [--content slides.html] [--theme my.css] [--force]
     python deck.py theme  talk.html [--theme my.css]        re-inline the theme into an existing deck
     python deck.py check  talk.html                         layout problems per slide (exit 1 if any)
-    python deck.py shots  talk.html [--out shots/] [--slides 2,5]   PNG per slide, 1600x900
+    python deck.py shots  talk.html [--out dir] [--slides 2,5]  PNG per slide, 1600x900 (default: talk-shots/)
     python deck.py pdf    talk.html [--out talk.pdf]        one 1600x900 page per slide
 
 Needs Python 3.9+ and Chrome, Edge or Chromium (set CHROME_PATH if it is not found).
@@ -34,10 +35,14 @@ def cmd_new(a) -> int:
     for key, val in {"TITLE": a.title, "SUBTITLE": a.subtitle, "KICKER": a.kicker, "META": a.meta}.items():
         page = page.replace("{{" + key + "}}", html.escape(val or ""))
     page = re.sub(r'\s*<(div|p) class="(kicker|lead|meta)"></\1>', "", page)  # drop empty optional lines
+    if a.content:  # slides written in a separate file: <section class="slide ..."> blocks
+        marker = "<!-- ===== end of slides ===== -->"
+        page = page.replace(marker, Path(a.content).read_text(encoding="utf-8").strip() + "\n\n" + marker)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
     print(f"created {out.resolve()}")
-    print("add slides between the '===== slides' markers; layouts: references/layouts.md")
+    if not a.content:
+        print("add slides between the '===== slides' markers; layouts: references/layouts.md")
     return 0
 
 
@@ -85,7 +90,7 @@ def slide_count(deck: Path) -> int:
 
 def cmd_shots(a) -> int:
     deck = Path(a.deck)
-    out = Path(a.out or deck.with_suffix("").name + "-shots")
+    out = Path(a.out) if a.out else deck.with_name(deck.stem + "-shots")
     n = slide_count(deck)
     wanted = [int(x) for x in a.slides.split(",")] if a.slides else range(1, n + 1)
     for i in wanted:
@@ -110,6 +115,7 @@ def main() -> int:
     n = sub.add_parser("new", help="create a deck from the template")
     n.add_argument("deck"); n.add_argument("--title", required=True)
     n.add_argument("--subtitle"); n.add_argument("--kicker"); n.add_argument("--meta")
+    n.add_argument("--content", help='file of <section class="slide ..."> blocks to add after the title slide')
     n.add_argument("--theme"); n.add_argument("--force", action="store_true")
     n.set_defaults(fn=cmd_new)
 
