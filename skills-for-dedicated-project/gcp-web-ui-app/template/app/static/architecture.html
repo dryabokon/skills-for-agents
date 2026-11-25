@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Architecture</title>
+<style>
+:root{--bg:#f6f6f5;--text:#141414;--muted:#6b6b6b;color-scheme:light}
+:root[data-theme=dark]{--bg:#0e0e0e;--text:#ececec;--muted:#9b9b9b;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font:13px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1000px;margin:16px auto;padding:0 16px}.muted{color:var(--muted)}.mermaid{text-align:center}
+</style>
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('report-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))}catch(e){}</script>
+</head>
+<body>
+<div class="wrap">
+  <p class="muted">Source: <code>docs/architecture.mmd</code> (edit it with the code it describes).</p>
+  <pre class="mermaid"><!--MERMAID--></pre>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:document.documentElement.getAttribute('data-theme')==='dark'?'dark':'neutral'});
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+flowchart LR
+  U["Browser<br/>tabs: Settings · Runs · Run · Architecture"]
+  S["app/server.py<br/>stdlib HTTP server"]
+  R["app/runner.py<br/>run(settings) -> results"]
+  P["app/page.py<br/>run page via report skill"]
+  F[("runs/NNN-date/<br/>config · status · log · results · index.html<br/>(Cloud Storage bucket at /app/runs)")]
+  X["External data<br/>(the domain's APIs)"]
+
+  U -- "POST /api/runs" --> S
+  U -- "GET /api/runs, /run/NNN" --> S
+  S -- "background thread" --> R
+  R --> X
+  R -- "results.json" --> F
+  S -- "status, listing" --> F
+  S --> P --> F
+
+  subgraph Cloud Run behind IAP
+    S
+    R
+    P
+  end

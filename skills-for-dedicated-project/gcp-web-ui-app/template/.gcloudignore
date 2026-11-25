@@ -1,0 +1,10 @@
+# Never uploaded to Cloud Build: secrets, git, environments, run history
+.gcloudignore
+.git
+.github
+.env
+**/.env
+.venv/
+**/__pycache__/
+runs/
+tests/

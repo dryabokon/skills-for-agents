@@ -1,0 +1,18 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tests
+        run: python -m unittest -v
+      - name: App starts and serves pages
+        run: |
+          RUNS_DIR=$(mktemp -d) python -m app --port 8080 & sleep 2
+          curl -fsS http://127.0.0.1:8080/healthz && curl -fsS -o /dev/null http://127.0.0.1:8080/

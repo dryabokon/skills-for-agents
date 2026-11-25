@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Web UI app</title>
+<style>
+:root{--bg:#f6f6f5;--surface:#fff;--text:#141414;--muted:#6b6b6b;--faint:#a1a1a1;--line:#e6e6e4;--fill:#efefed;
+--good:#0c9b47;--warn:#b86200;--bad:#e0281f;--note:#9a7b00;color-scheme:light}
+:root[data-theme=dark]{--bg:#0e0e0e;--surface:#161616;--text:#ececec;--muted:#9b9b9b;--faint:#666;--line:#262626;--fill:#1f1f1f;
+--good:#30d158;--warn:#ff9f0a;--bad:#ff453a;--note:#ffd60a;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:13px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+display:grid;grid-template-rows:auto minmax(0,1fr)}
+button,input,select{font:inherit;color:inherit}.muted{color:var(--muted)}
+.top{border-bottom:1px solid var(--line);padding:0 16px;height:46px;display:flex;align-items:center;gap:18px;white-space:nowrap;overflow-x:auto}
+.top h1{font-size:15px;margin:0}.tabs{display:flex;gap:2px;height:100%}
+.tabs a{display:flex;align-items:center;padding:0 12px;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;text-decoration:none}
+.tabs a.on{color:var(--text);border-bottom-color:var(--text)}.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;height:30px;padding:0 12px;cursor:pointer}
+.btn:hover{border-color:var(--faint)}.btn.pri{background:var(--text);color:var(--surface);border-color:var(--text)}.btn:disabled{opacity:.4;cursor:default}
+.view{display:none;min-height:0;overflow:auto}.view.on{display:block}
+.wrap{max-width:760px;margin:16px auto;padding:0 16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.field{display:grid;grid-template-columns:180px minmax(0,1fr);gap:4px 12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
+.field:last-of-type{border-bottom:0}.field label{font-weight:600}.field .help{grid-column:2;color:var(--muted);font-size:12px}
+.field input,.field select{width:100%;max-width:320px;height:30px;border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:0 8px}
+.field input[type=checkbox]{width:auto;height:auto}
+.actions{display:flex;gap:10px;align-items:center;margin-top:14px}.err{color:var(--bad)}
+table{border-collapse:collapse;width:100%}th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--fill)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:0 7px;border-radius:10px;border:1px solid currentColor}
+.s-done,.s-good{color:var(--good)}.s-failed,.s-bad{color:var(--bad)}.s-running,.s-queued{color:var(--note)}.s-warn{color:var(--warn)}
+iframe{border:0;width:100%;height:100%;display:block;background:var(--bg)}
+#v-run,#v-architecture{overflow:hidden}.empty{color:var(--muted);text-align:center;padding:40px 16px}
+@media (max-width:600px){.field{grid-template-columns:1fr}.field .help{grid-column:1}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 id="title">Web UI app</h1>
+  <nav class="tabs"><a href="#settings" data-v="settings">Settings</a><a href="#runs" data-v="runs">Runs</a><a href="#run" data-v="run">Run</a><a href="#architecture" data-v="architecture">Architecture</a></nav>
+  <span class="sp"></span>
+  <button class="btn" id="theme" type="button" aria-label="Toggle theme">◐</button>
+</header>
+
+<section class="view" id="v-settings"><div class="wrap"><form class="card" id="form" novalidate>
+  <div id="fields"></div>
+  <div class="actions"><button class="btn pri" id="start" type="submit">Start run</button><span id="msg" class="muted"></span></div>
+</form></div></section>
+
+<section class="view" id="v-runs"><div class="wrap"><div class="card" style="padding:0;overflow:auto">
+  <table><thead><tr><th>run</th><th>state</th><th>result</th><th>started</th><th>time</th></tr></thead><tbody id="runs"></tbody></table>
+  <div class="empty" id="noruns" hidden>No runs yet. Start one on the Settings tab.</div>
+</div></div></section>
+
+<section class="view" id="v-run"><div class="empty" id="norun">Pick a run on the Runs tab, or start one.</div><iframe id="runFrame" title="Run" hidden></iframe></section>
+
+<section class="view" id="v-architecture"><iframe id="archFrame" title="Architecture"></iframe></section>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+function api(url,body){return fetch(url,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{})
+  .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||r.status);return j})})}
+
+// theme: same key as the report pages, so the Run tab follows
+var KEY='report-theme',root=document.documentElement;
+function getT(){try{return localStorage.getItem(KEY)}catch(e){return null}}
+function setT(t){root.setAttribute('data-theme',t);try{localStorage.setItem(KEY,t)}catch(e){}
+  [$('runFrame'),$('archFrame')].forEach(function(f){try{f.contentDocument.documentElement.setAttribute('data-theme',t)}catch(e){}})}
+setT(getT()||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+$('theme').onclick=function(){setT(root.getAttribute('data-theme')==='dark'?'light':'dark')};
+
+var settings=[],timer=null,currentRun=null;
+api('/api/app').then(function(a){document.title=a.title;$('title').textContent=a.title;settings=a.settings;
+  $('fields').innerHTML=settings.map(function(s){var id='f-'+s.name,v=s.default==null?'':s.default,inp;
+    if(s.type==='choice')inp='<select id="'+id+'">'+(s.options||[]).map(function(o){return'<option'+(o===v?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>';
+    else if(s.type==='bool')inp='<input type="checkbox" id="'+id+'"'+(v?' checked':'')+'>';
+    else inp='<input id="'+id+'" type="'+(s.type==='int'||s.type==='float'?'number':'text')+'"'+(s.type==='float'?' step="any"':'')
+      +(s.min!=null?' min="'+s.min+'"':'')+(s.max!=null?' max="'+s.max+'"':'')+' value="'+esc(v)+'">';
+    return'<div class="field"><label for="'+id+'">'+esc(s.label||s.name)+'</label>'+inp+(s.help?'<div class="help">'+esc(s.help)+'</div>':'')+'</div>'}).join('')});
+
+$('form').onsubmit=function(ev){ev.preventDefault();var body={};
+  settings.forEach(function(s){var el=$('f-'+s.name);body[s.name]=s.type==='bool'?el.checked:el.value});
+  $('start').disabled=true;$('msg').className='muted';$('msg').textContent='starting…';
+  api('/api/runs',{settings:body}).then(function(r){$('msg').textContent='';location.hash='run/'+r.run})
+    .catch(function(e){$('msg').className='err';$('msg').textContent=e.message})
+    .then(function(){$('start').disabled=false})};
+
+function loadRuns(){api('/api/runs').then(function(rs){$('noruns').hidden=rs.length>0;
+  $('runs').innerHTML=rs.map(function(r){var res=r.state==='failed'?(r.error||''):(r.headline||'');
+    return'<tr data-run="'+esc(r.run)+'"><td>'+esc(r.run)+'</td><td><span class="pill s-'+esc(r.state)+'">'+esc(r.state)+'</span></td>'
+      +'<td class="'+(r.verdict?'s-'+esc(r.verdict):'')+'">'+esc(res)+'</td><td class="muted">'+esc((r.started||'').replace('T',' '))+'</td>'
+      +'<td class="muted">'+(r.seconds!=null?esc(r.seconds)+' s':'')+'</td></tr>'}).join('')})}
+$('runs').onclick=function(ev){var tr=ev.target.closest('tr');if(tr)location.hash='run/'+tr.getAttribute('data-run')};
+
+function show(){var h=location.hash.replace(/^#/,'')||'settings',v=h.split('/')[0],arg=h.split('/')[1];
+  if(['settings','runs','run','architecture'].indexOf(v)<0)v='settings';
+  document.querySelectorAll('.view').forEach(function(s){s.classList.toggle('on',s.id==='v-'+v)});
+  document.querySelectorAll('.tabs a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-v')===v)});
+  clearInterval(timer);
+  if(v==='runs'){loadRuns();timer=setInterval(loadRuns,3000)}
+  if(v==='run'){if(arg)currentRun=arg;$('norun').hidden=!!currentRun;$('runFrame').hidden=!currentRun;
+    if(currentRun&&$('runFrame').getAttribute('src')!=='/run/'+currentRun+'?embed=1')$('runFrame').src='/run/'+currentRun+'?embed=1'}
+  if(v==='architecture'&&!$('archFrame').src)$('archFrame').src='/architecture'}
+addEventListener('hashchange',show);show();
+})();
+</script>
+</body>
+</html>

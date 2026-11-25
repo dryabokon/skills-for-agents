@@ -17,3 +17,6 @@ runs/
 # IDE settings
 .idea/
 .vscode/
+
+# eval runs (claude plugin eval): reports and traces stay local
+evals/results/
