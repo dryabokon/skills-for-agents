@@ -173,7 +173,7 @@ body.static #progress { display: none; }
         const r = el.getBoundingClientRect();
         if (r.width === 0 && r.height === 0) return;
         const tag = el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '');
-        const text = (el.innerText || el.getAttribute('alt') || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+        const text = (el.innerText || el.textContent || el.getAttribute('alt') || '').replace(/\s+/g, ' ').trim().slice(0, 60);
         if (el.tagName === 'IMG' && el.complete && el.naturalWidth === 0) issues.push({ kind: 'broken-image', src: el.getAttribute('src') });
         if (r.right > box.right + 1 || r.bottom > box.bottom + 1 || r.left < box.left - 1 || r.top < box.top - 1) {
           flagged.add(el);
@@ -187,8 +187,14 @@ body.static #progress { display: none; }
           flagged.add(el);
           issues.push({ kind: 'text-wider-than-box', el: tag, text, overflow_px: el.scrollWidth - el.clientWidth });
         }
-        const fs = parseFloat(getComputedStyle(el).fontSize);
-        if (own && fs < 18) issues.push({ kind: 'tiny-text', el: tag, text, font_px: fs });
+        let fs = parseFloat(getComputedStyle(el).fontSize), min = 18;
+        const svg = el.ownerSVGElement;
+        if (svg) {  /* SVG text: font-size is in viewBox units - convert to slide pixels; labels may be a bit smaller */
+          const vb = svg.viewBox.baseVal, r = svg.getBoundingClientRect();
+          if (vb && vb.width && vb.height) fs = Math.round(fs * Math.min(r.width / vb.width, r.height / vb.height) * 10) / 10;
+          min = 16;
+        }
+        if (own && fs < min) issues.push({ kind: 'tiny-text', el: tag, text, font_px: fs, min_px: min });
       });
       const words = (s.innerText || '').trim().split(/\s+/).filter(Boolean).length;
       if (words > 90) issues.push({ kind: 'too-much-text', words });

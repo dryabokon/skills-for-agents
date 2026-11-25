@@ -42,7 +42,8 @@ SVG: `<g class="node proposed">`. Put a legend on the diagram whenever statuses 
 3. **Look at the PNG.** For SVG also fix every issue `diagram.py svg` reports (it exits 1 while issues remain):
    widen the box or shorten the text, move overlapping items, enlarge the viewBox.
 4. Hand over the SVG (scales for slides and docs) and mention the PNG.
-   For a slide, paste the output SVG into a `figure` slide of the slides skill.
+   **For a slide**, draw on a `960×410` canvas without heading (see the conventions) - a 960×540 diagram
+   shrinks to 13-16 px text on a slide - then paste the output SVG into a `figure` slide of the slides skill.
 
 ## Mermaid rules
 

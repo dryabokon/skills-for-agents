@@ -6,7 +6,12 @@ element below.
 
 ## Canvas
 
-- `viewBox="0 0 960 540"` (16:9, fits a slide) unless the content needs another shape. No `width`/`height`.
+- Standalone (docs, README, a whole page): `viewBox="0 0 960 540"`. No `width`/`height`.
+- **For a slide** (`figure` layout of the slides skill): `viewBox="0 0 960 410"`, no heading or caption inside
+  (the slide has them). The figure area is ~1390×560 px, so this canvas is drawn ~1.35× larger and the smallest
+  text (12.5) lands at ~17 px; the slides check wants diagram text ≥ 16 px. A 960×540 canvas on a slide
+  renders text at 13–16 px and fails that check. Too much for 960×410? Split the diagram over two slides.
+  Create it with `diagram.py new-svg x.svg --width 960 --height 410`, then move the nodes up.
 - Margins ≥ 40 units. Heading at `y≈52`, caption at `y≈76`, content from `y≈110`.
 - Work on a 10-unit grid; align node edges and centres - the eye catches 3-unit misalignments.
 

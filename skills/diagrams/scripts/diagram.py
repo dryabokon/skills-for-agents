@@ -108,12 +108,12 @@ def svg_theme_css(v: dict) -> str:
   .edge {{ fill: none; stroke: {v['muted']}; stroke-width: 1.5; }}
   .edge.accent {{ stroke: {v['accent']}; stroke-width: 2; }}
   .edge.dashed {{ stroke-dasharray: 6 4; }}
-  .edge-label {{ font-size: 12px; fill: {v['muted']}; font-weight: 600; }}
+  .edge-label {{ font-size: 12.5px; fill: {v['muted']}; font-weight: 600; }}
   .edge-label-bg {{ fill: {v['surface']}; }}
   .group > rect {{ fill: {v['surface-2']}; stroke: {v['line']}; stroke-width: 1; stroke-dasharray: 5 4; }}
-  .group .group-title {{ font-size: 12px; font-weight: 700; letter-spacing: 1px; fill: {v['muted']}; text-transform: uppercase; }}
+  .group .group-title {{ font-size: 12.5px; font-weight: 700; letter-spacing: 1px; fill: {v['muted']}; text-transform: uppercase; }}
   .heading {{ font-size: 20px; font-weight: 700; }}
-  .caption, .legend text {{ font-size: 12px; fill: {v['muted']}; }}
+  .caption, .legend text {{ font-size: 12.5px; fill: {v['muted']}; }}
   .arrowhead {{ fill: {v['muted']}; }}
   .arrowhead.accent {{ fill: {v['accent']}; }}"""
     for s in STATUSES:

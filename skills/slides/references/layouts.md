@@ -80,7 +80,9 @@ ones add `small-value` (`<div class="value small-value">7 h → 5 min</div>`) or
 
 ## figure — one diagram, chart or screenshot
 
-Use an SVG or PNG made by the diagrams skill. The figure fills the space under the heading.
+Use an SVG or PNG made by the diagrams skill. The figure fills the space under the heading (~1390×560 px).
+Draw diagrams for slides on a 960×410 canvas without their own heading, so their text stays ≥ 16 px;
+`deck.py check` reports `tiny-text` for diagrams drawn smaller.
 
 ```html
 <section class="slide layout-figure">
