@@ -1,25 +1,48 @@
 # skills-for-agents
 
-Skills for coding agents (Claude Code, Codex, Cursor, Copilot): slide decks, diagrams, reports,
-Azure DevOps, GitHub/GitLab, BigQuery, Google Cloud.
+Your coding agent, finishing the work around the code: **slide decks, diagrams and reports** in one consistent
+style, and **straight answers about your PRs, builds, data and cloud**. It checks its own result before handing
+it over, and it never changes anything without showing you the plan first.
 
-## Example
+Works with Claude Code, Codex, Cursor, Copilot and Gemini CLI.
+
+## How to ask
+
+Name the skill, then say what you need:
 
 ```text
-/skills-for-agents:slides
-Source: design-note.md
-Audience: the steering committee, 6 slides, with an architecture diagram of what exists and what is proposed
-Save: deck.html and deck.pdf
-Check every slide before you hand it over
+/skills-for-agents:<skill>  <what>, from <which data>, for <whom> — save as <file>
 ```
 
-![Slides the agent produced](.github/media/story-deck.png)
+Naming the skill is what makes the result reliable: the agent then uses the skill's tools, style and checks
+instead of improvising. (Other agents: start with *"Use the &lt;skill&gt; skill"*.)
 
-<sub>Real output: [input](.github/media/design-note.md) · [PDF](.github/media/story-deck.pdf)</sub>
+## What you can ask
 
-The same shape works for every skill: **which skill · what data · for whom · what to show · where to save ·
-check it**. You can also just ask ("make a 6-slide deck from design-note.md") - the agent picks the skill by
-itself; naming it makes that certain.
+| Skill | Prompt | You get |
+|---|---|---|
+| **slides** | `/skills-for-agents:slides` Turn design-note.md into 6 slides for the steering committee, with an architecture diagram. Save deck.html and a PDF. | one-file deck + PDF, every slide checked for overflow |
+| **diagrams** | `/skills-for-agents:diagrams` Draw how an order flows through our services; mark what exists, what is proposed and what is undecided. | SVG + PNG with a status legend |
+| **report** | `/skills-for-agents:report` Report on runs/007/results.json — what failed and why, failures first. Save runs/007/index.html. | one HTML page, verdict first, light/dark |
+| **azure-devops** | `/skills-for-agents:azure-devops` Why did the last build of develop fail? | the failing step, the error that matters, the fix |
+| **git-hosting** | `/skills-for-agents:git-hosting` Where are my open PRs stuck? | missing approvals, failing checks, open threads |
+| **bigquery** | `/skills-for-agents:bigquery` Which tables in analytics stopped updating this week? | stale and empty tables, found from free metadata |
+| **gcp** | `/skills-for-agents:gcp` Deploy this folder to Cloud Run behind Google sign-in. | the exact gcloud plan, run only after your yes |
+
+## What it looks like
+
+| Slides | Diagram | Report |
+|---|---|---|
+| [![Slides](.github/media/story-deck.png)](.github/media/story-deck.pdf) | ![Diagram](.github/media/diagram.png) | ![Report](.github/media/report.png) |
+
+<sub>Real output. Slides and diagram: one Claude Code run on the prompt above with
+[design-note.md](.github/media/design-note.md) (click for the PDF). Report: this repository's own test run.</sub>
+
+And an answer from a service skill — *"Why did the last failed build fail?"* on a public CI:
+
+> **Root cause:** step *Build shared fx* failed NuGet restore — `NU1603`: `Microsoft.Extensions.*` 10.11.1 is not on
+> the feeds, 11.0.0 was resolved, warnings are errors. *Monitor Helix Jobs* failed only as a consequence.
+> **Fix:** update the versions through the dependency flow; don't silence NU1603.
 
 ## Install
 
@@ -28,20 +51,14 @@ itself; naming it makes that certain.
 /plugin install skills-for-agents@dryabokon
 ```
 
-Other agents: `npx skills add dryabokon/skills-for-agents`, and start the prompt with
-"Use the slides skill (skills/slides)" instead of the slash command. Needs Python 3.9+ and Chrome or Edge.
-Tokens go into `.env` (template: [.env.example](.env.example)).
+Other agents: `npx skills add dryabokon/skills-for-agents`. Needs Python 3.9+ and Chrome or Edge; BigQuery and
+Cloud Run use your `gcloud` sign-in. Tokens go into `.env` — template: [.env.example](.env.example).
 
-## Skills
+## Safe by default
 
-- **slides** — HTML decks and PDF in one style.
-- **diagrams** — Mermaid and SVG diagrams with a status legend.
-- **report** — status reports (tests, checks, audits) with a verdict and light/dark theme.
-- **azure-devops** — PR status, why a build failed, work items, wiki.
-- **git-hosting** — GitHub and GitLab: PRs/MRs, why CI failed, issues, git with a token.
-- **bigquery** — explore and query with a dry run and a cost cap.
-- **gcp** — Cloud Run, logs, deploy and rollback plans, buckets, secrets.
+Read-only unless you ask. Creating a PR, deploying or uploading is shown as a plan and runs only after you
+confirm; nothing merges, approves or deletes. BigQuery prices every query first and refuses anything over your cap.
+Tokens are never printed.
 
-Anything that changes something (create a PR, deploy, upload) is shown as a plan first and runs only after you
-confirm. Each skill has `examples/*.sh` to run the same commands by hand; `python tests/run.py` tests them all
-(report in `runs/NNN/index.html`).
+Every skill can be run by hand with the same commands (`skills/<name>/examples/*.sh`), and `python tests/run.py`
+tests them all.
