@@ -65,8 +65,10 @@ gemini skills install https://github.com/dryabokon/skills-for-agents --path skil
 **Requirements:** Python 3.9+ and a Chromium-based browser (Chrome, Edge, Chromium) — no pip packages.
 Mermaid diagrams also need Node.js 18+. No Chrome (Linux, WSL, CI)? One command, no root:
 `npx @puppeteer/browsers install chrome-headless-shell@stable --path ~/.cache/puppeteer`.
-Services read their settings from environment variables or a `.env` file in your project — each skill ships a
-`.env.example` listing them (e.g. [azure-devops](skills/azure-devops/.env.example)). Tokens never go into the repo or the chat.
+Services read their settings from environment variables or the nearest `.env` (current folder or any parent).
+Copy [.env.example](.env.example) to `.env` — in this repo for the examples, in your own project for daily use;
+each skill also documents its variables in its own `.env.example`. `.env` is git-ignored, and `check.py` refuses
+anything that looks like a token in files git would commit.
 
 ## Skills
 

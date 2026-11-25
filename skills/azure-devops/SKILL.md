@@ -39,7 +39,8 @@ a token into the chat, and never print, log or commit it.
 1. **Read-only unless asked.** Everything except `pr-create --apply` only reads.
 2. **Creating a PR:** run `pr-create` without `--apply` first, show the user the title, branches, description and
    linked work items, and add `--apply` only after they confirm. Before writing a description, look at 2-3 recent
-   PRs of the repo (`prs --repo R --status completed`) and follow their conventions.
+   PRs of the repo (`prs --repo R --status completed`) and follow their conventions. If the dry run reports an
+   active PR for the same branches, tell the user and link it instead of creating another.
 3. **Never** merge, approve, vote, abandon, comment or delete through this skill - there are no commands for it on
    purpose. If the user wants that, give them the link.
 
@@ -49,8 +50,9 @@ a token into the chat, and never print, log or commit it.
   failing policies, open threads grouped by file. For a failing build policy, follow up with `build <id>`.
 - **"Why did the build fail?"** → `build URL` or `build last-failed [--pipeline ID|--branch B|--mine]`.
   The steps are ordered by when they failed: the first one is usually the cause, later ones (monitors,
-  summaries) are often consequences. Quote the decisive error line, explain it, suggest the fix; if the log tail
-  is not enough, rerun with `--log-lines 200`.
+  summaries) are often consequences. When a step's error is generic ("Bash exited with code 1"), the
+  *error-looking lines from the whole log* section usually holds the real cause. Quote the decisive line,
+  explain it, suggest the fix; if that is still not enough, rerun with `--log-lines 200`.
 - **"What's on my plate?"** → `work-items --mine`; for one item `work-item ID`.
 - **"Read this wiki page / summarise the spec"** → `wiki URL`; `--tree` lists its sub-pages.
 - **"Is the build agent alive?"** → `agents --pool NAME` (status online/offline, busy).
@@ -68,3 +70,4 @@ Run from this folder (`bash examples/<name>.sh`); with no `.env` they use the pu
 - `--mine`, `--reviewing` and `@Me` in WIQL need a token (they resolve "me" from it).
 - A sign-in page instead of data means the token is missing, wrong or expired.
 - Times are UTC, as the API returns them.
+- Old builds disappear under retention; a 404 for a build linked from an old PR usually means exactly that.

@@ -90,11 +90,18 @@ def check_skill(folder: Path) -> None:
 
 
 def text_files():
-    for path in ROOT.rglob("*"):
-        if path.is_file() and not (SKIP_DIRS & set(path.relative_to(ROOT).parts)):
-            if path.suffix.lower() in {".png", ".pdf", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2"}:
-                continue
-            yield path
+    """Files git would commit: tracked + untracked-but-not-ignored. A local .env is ignored, so it is not scanned."""
+    listed = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"], cwd=ROOT,
+                            capture_output=True, text=True, encoding="utf-8")
+    names = listed.stdout.split("\0") if listed.returncode == 0 else \
+        [p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*") if p.is_file()]
+    for name in filter(None, names):
+        path = ROOT / name
+        if not path.is_file() or SKIP_DIRS & set(Path(name).parts):
+            continue
+        if path.suffix.lower() in {".png", ".pdf", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2"}:
+            continue
+        yield path
 
 
 def main() -> int:

@@ -45,6 +45,10 @@ from pathlib import Path
 
 API = "7.1"
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
+ERROR_LINE = re.compile(r"(?i)\b(error|errors|failed|failure|fatal|exception|traceback|assert(ion)?error|panic|denied|"
+                        r"not found|no such file|timed? ?out|exit(ed)? (with )?code [1-9])\b")
+NOISE_LINE = re.compile(r"(?i)^##\[(section|command|group|endgroup)\]|\b0 errors?\b|\berrors?: 0\b|\"errors?\":\s*(\[\]|0|null)|"
+                        r"--fail|-e\b.*set|ignore.?errors|continueOnError")
 VOTES = {10: "approved", 5: "approved with suggestions", 0: "no vote", -5: "waiting for author", -10: "rejected"}
 
 
@@ -281,7 +285,8 @@ def cmd_pr(a):
     def show(o):
         lines = [f"PR {o['id']}  {o['title']}", f"  {o['url']}",
                  f"  {o['author']}: {o['source']} -> {o['target']}   status {o['status']}, merge {o['merge_status']}",
-                 "", "Reviewers:"] + [f"  {r['name']}: {r['vote']}{' (required)' if r['required'] else ''}" for r in o["reviewers"]]
+                 "", "Reviewers:" + ("" if o["reviewers"] else " none")] + [
+                     f"  {r['name']}: {r['vote']}{' (required)' if r['required'] else ''}" for r in o["reviewers"]]
         if not isinstance(o["policies"], list):
             lines += ["", f"Policies: {o['policies']}"]
         elif not o["policies"]:
@@ -315,10 +320,20 @@ def cmd_pr_create(a):
             "description": desc, "isDraft": bool(a.draft)}
     if a.work_item:
         body["workItemRefs"] = [{"id": str(w)} for w in a.work_item]
+    existing = c.call(f"git/repositories/{repo['id']}/pullrequests",
+                      {"searchCriteria.sourceRefName": body["sourceRefName"],
+                       "searchCriteria.targetRefName": body["targetRefName"], "searchCriteria.status": "active"})["value"]
+    if existing:
+        e = existing[0]
+        link = c.web(f"_git/{urllib.parse.quote(a.repo)}/pullrequest/{e['pullRequestId']}")
+        msg = f"an active PR from {a.source} into {tgt} already exists: {e['pullRequestId']} \"{e['title']}\" - {link}"
+        if a.apply:
+            raise Fail(msg + " (Azure DevOps allows only one)")
     if not a.apply:
         out = {"would_create": {**body, "description": f"<{len(desc)} chars>"}, "repo": a.repo,
+               "warning": msg if existing else None,
                "note": "nothing was sent; repeat with --apply to create the pull request"}
-        return out, lambda o: json.dumps(o, indent=2, ensure_ascii=False)
+        return {k: v for k, v in out.items() if v is not None}, lambda o: json.dumps(o, indent=2, ensure_ascii=False)
     p = c.call(f"git/repositories/{repo['id']}/pullrequests", body=body)
     out = {"created": p["pullRequestId"], "url": c.web(f"_git/{urllib.parse.quote(a.repo)}/pullrequest/{p['pullRequestId']}")}
     return out, lambda o: f"created PR {o['created']}: {o['url']}"
@@ -360,7 +375,13 @@ def cmd_build(a):
     else:
         info, bid = target(a, "build")
         c = Client(a, info)
-    b = c.call(f"build/builds/{bid}")
+    try:
+        b = c.call(f"build/builds/{bid}")
+    except Fail as e:
+        if "HTTP 404" in str(e):
+            raise Fail(f"build {bid} not found - wrong id, or deleted by the project's retention policy "
+                       "(old builds of merged or stale PRs usually are)")
+        raise
     out = build_row(b)
     out["url"] = c.web(f"_build/results?buildId={bid}")
     out["reason"] = b.get("reason")
@@ -380,6 +401,11 @@ def cmd_build(a):
             log = c.call(f"build/builds/{bid}/logs/{r['log']['id']}", text=True)
             clean = [ANSI.sub("", re.sub(r"^\S+Z\s", "", l)) for l in log.splitlines()]
             step["log_tail"] = clean[-a.log_lines:]
+            # The real cause is often far above the tail ("Bash exited with code 1" says nothing): collect the
+            # lines that look like errors from the whole log, minus those already shown.
+            tail = set(step["log_tail"])
+            hits = [l.strip() for l in clean if ERROR_LINE.search(l) and not NOISE_LINE.search(l) and l not in tail]
+            step["log_errors"] = list(dict.fromkeys(hits))[-15:]
         out["failed_steps"].append(step)
 
     def show(o):
@@ -394,6 +420,9 @@ def cmd_build(a):
             lines += ["", f"FAILED {s['type']}: {s['step']}  (failed at {s['finished']})"] + [f"  error: {e}" for e in s["errors"]]
             if more > 0:
                 lines.append(f"  … {more} more error line(s)")
+            if s.get("log_errors"):
+                lines += [f"  --- error-looking lines from the whole log ({len(s['log_errors'])}) ---"] + [
+                    f"  ! {l[:300]}" for l in s["log_errors"]]
             if s.get("log_tail"):
                 lines += [f"  --- last {len(s['log_tail'])} log lines ---"] + [f"  | {l}" for l in s["log_tail"]]
         return "\n".join(lines)
@@ -469,6 +498,8 @@ def cmd_work_items(a):
     for i in range(0, len(ids), 200):
         batch = c.call("wit/workitems", {"ids": ",".join(map(str, ids[i:i + 200])), "fields": ",".join(WI_FIELDS)})
         rows += [wi_row(w) for w in batch["value"]]
+    order = {wid: i for i, wid in enumerate(ids)}  # the batch endpoint ignores the query's ORDER BY
+    rows.sort(key=lambda r: order.get(r["id"], len(order)))
     return rows, lambda o: table(o, ["id", "type", "state", "title", "assigned to", "changed"])
 
 
